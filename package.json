@@ -1,0 +1,58 @@
+{
+  "name": "slots",
+  "author": "beqa meqvabishvili",
+  "main": "dist/index.js",
+  "module": "dist/esm/slots.js",
+  "version": "0.1.0",
+  "description": "",
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "start": "react-pkg-scripts watch",
+    "build": "react-pkg-scripts build",
+    "test": "react-pkg-scripts test",
+    "preview": "react-pkg-scripts preview"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "react"
+  ],
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.26",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-pkg-scripts": "^1.0.9",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "ts-toolbelt": "^9.6.0"
+  }
+}

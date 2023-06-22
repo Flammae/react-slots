@@ -1,49 +1,55 @@
+import { DEFAULT_TEMPLATE_AS, SLOT_NAME } from "./constants";
 import type {
 	SlotName,
-	TemplateFunction,
+	TemplateComponent,
 	CreateTemplate,
 	SlotableNode,
 } from "./types";
 
-const templateFnCache: Map<SlotName, TemplateFunction<any, any>> = new Map();
+const templateFnCache: Map<SlotName, TemplateComponent<any, any>> = new Map();
 
 /**
- * Gets TemplateFunction from cache or creates a new one.
+ * Gets TemplateComponent from cache or creates a new one.
  */
-function getTemplateFunction(slotName: SlotName): TemplateFunction<any, any> {
-	// Since react doesn't recommend creating function components in render phase,
-	// we can use cache strategy which creates a function once during
-	// the first render, and access the same function on subsequent renders.
+function getTemplateComponent<T extends SlotName>(
+	slotName: T
+): TemplateComponent<T, any> {
 	if (templateFnCache.has(slotName)) {
 		return templateFnCache.get(slotName)!;
 	}
 
-	const TemplateFunction = () => {
-		throw new Error("error");
-	};
-	TemplateFunction.slot = slotName;
+	const TemplateComponent = Object.assign(
+		() => {
+			const name = String(TemplateComponent[SLOT_NAME]);
+			throw new Error(
+				`\`<Template.${name}>\` was rendered outside of \`useSlot()\`. \
+				Make sure the \`children\` is passed to \`useSlot\` as an argument, \
+				and that \`Template\` is a direct child (not nested in another element)`
+			);
+		},
+		{ [SLOT_NAME]: slotName }
+	);
 
-	templateFnCache.set(slotName, TemplateFunction);
+	templateFnCache.set(slotName, TemplateComponent);
 
-	return TemplateFunction;
+	return TemplateComponent;
 }
 
 export const Template = new Proxy(
 	// Default Templates are same as named tamplates with `slot` set explicitly to `undefined`
-	getTemplateFunction(undefined),
+	getTemplateComponent(undefined) as CreateTemplate<any>,
 	{
 		get: (target, prop) => {
-			if (Reflect.has(target, prop)) {
+			if (prop === SLOT_NAME) {
 				return Reflect.get(target, prop);
 			}
-
 			// Whatever consumer provides as prop will be the new named template
-			return getTemplateFunction(prop);
+			return getTemplateComponent(prop);
 		},
 	}
-) as CreateTemplate<any>;
+);
 
-/** Create typesafe `Template` */
+/** Create typesafe template */
 export function createTemplate<T extends SlotableNode<any, any>>() {
 	return Template as CreateTemplate<T>;
 }

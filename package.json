@@ -1,5 +1,6 @@
 {
 	"name": "@beqa/react-slots",
+	"private": false,
 	"version": "0.1.0",
 	"license": "MIT",
 	"types": "dist/index.d.ts",

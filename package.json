@@ -1,58 +1,44 @@
 {
-  "name": "slots",
-  "author": "beqa meqvabishvili",
-  "main": "dist/index.js",
-  "module": "dist/esm/slots.js",
-  "version": "0.1.0",
-  "description": "",
-  "files": [
-    "dist"
-  ],
-  "license": "MIT",
-  "scripts": {
-    "start": "react-pkg-scripts watch",
-    "build": "react-pkg-scripts build",
-    "test": "react-pkg-scripts test",
-    "preview": "react-pkg-scripts preview"
-  },
-  "peerDependencies": {
-    "react": ">=17",
-    "react-dom": ">=17"
-  },
-  "peerDependenciesMeta": {
-    "react-dom": {
-      "optional": true
-    }
-  },
-  "keywords": [
-    "react"
-  ],
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.26",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-pkg-scripts": "^1.0.9",
-    "typescript": "^4.9.4"
-  },
-  "dependencies": {
-    "ts-toolbelt": "^9.6.0"
-  }
+	"name": "@beqa/react-slots",
+	"version": "0.1.0",
+	"license": "MIT",
+	"types": "dist/index.d.ts",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"scripts": {
+		"build": "tsup src/index.ts --format cjs,esm --dts",
+		"lint": "tsc"
+	},
+	"peerDependencies": {
+		"react": ">=17",
+		"react-dom": ">=17"
+	},
+	"peerDependenciesMeta": {
+		"react-dom": {
+			"optional": true
+		}
+	},
+	"keywords": [
+		"react",
+		"slots",
+		"template",
+		"useSlots",
+		"createTemplate",
+		"slot-name",
+		"slots in react",
+		"vue slots in react",
+		"svelte slots in react",
+		"web component slots in react"
+	],
+	"devDependencies": {
+		"@changesets/cli": "^2.26.1",
+		"@types/react": "^18.0.26",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"tsup": "^7.0.0",
+		"typescript": "^4.9.4"
+	},
+	"dependencies": {
+		"ts-toolbelt": "^9.6.0"
+	}
 }

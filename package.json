@@ -1,14 +1,15 @@
 {
 	"name": "@beqa/react-slots",
 	"private": false,
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"license": "MIT",
 	"types": "dist/index.d.ts",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"scripts": {
 		"build": "tsup src/index.ts --format cjs,esm --dts",
-		"lint": "tsc"
+		"lint": "tsc",
+		"release": "pnpm run build && changeset publish"
 	},
 	"peerDependencies": {
 		"react": ">=17",

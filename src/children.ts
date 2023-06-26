@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { SlotName, SlotChildren, TemplateComponent } from "./types";
+import type { SlotName, Slots, TemplateComponent } from "./types";
 import {
 	isNamedSlot,
 	isTemplateElement,
@@ -7,7 +7,7 @@ import {
 } from "./typeGuards";
 import { DEFAULT_TEMPLATE_AS, SLOT_NAME } from "./constants";
 
-/** Same as SlotableNode but without elements with `slot-name` property. */
+/** Same as SlottableNode but without elements with `slot-name` property. */
 type Child =
 	| React.ReactElement
 	| React.ReactElement<TemplateComponent<any, any>, any>
@@ -44,7 +44,7 @@ export default class Children {
 		child.nodes.push(node);
 	}
 
-	build(children: SlotChildren): void {
+	build(children: Slots): void {
 		this.#children.clear();
 
 		React.Children.forEach(children, (child) => {
@@ -55,9 +55,9 @@ export default class Children {
 				this.set(child.type[SLOT_NAME], child);
 			} else if (isValidElement && isNamedSlot(child)) {
 				// <div slot-name="foo" />
-				const newElemenent = React.cloneElement(child);
-				delete newElemenent.props["slot-name"];
-				this.set(child.props["slot-name"], newElemenent);
+				const newElement = React.cloneElement(child);
+				delete newElement.props["slot-name"];
+				this.set(child.props["slot-name"], newElement);
 			} else {
 				// <div />, (props) => <div />, "foo", 42, true, false, null, undefined
 				this.set(undefined, child as Child);
@@ -66,6 +66,10 @@ export default class Children {
 	}
 
 	get(slotName: SlotName, props: {}): React.ReactNode {
+		if (!this.#children.has(slotName)) {
+			return undefined;
+		}
+
 		const children = this.#children.get(slotName);
 		const Wrapper = React.Fragment;
 
@@ -73,6 +77,10 @@ export default class Children {
 			return undefined;
 		}
 
+		// It's a good idea to wrap the children with createElement in here anyway
+		// because if we did not and a user provided a function conditionally,
+		// the old tree would have the wrapper and a new would not and react would
+		// unmount and remount everything
 		if (!children.hasFunction) {
 			return React.createElement(
 				Wrapper,
@@ -81,6 +89,7 @@ export default class Children {
 			);
 		}
 
+		// Wrapping is done to escape the react missing keys warning
 		return React.createElement(
 			Wrapper,
 			{},
@@ -105,6 +114,13 @@ export default class Children {
 				}
 				return node;
 			})
+		);
+	}
+
+	has(slotName: SlotName): boolean {
+		return (
+			this.#children.has(slotName) &&
+			this.#children.get(slotName)!.nodes.length > 0
 		);
 	}
 }

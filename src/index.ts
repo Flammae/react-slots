@@ -1,6 +1,3 @@
-import * as React from "react";
-
-// DUMMY
-export const MyComponent = (props: any) => {
-	return React.createElement("div", null, "Hello World");
-};
+export { useSlot } from "./useSlot";
+export { Template, createTemplate } from "./template";
+export type { Slot, Slots, CreateTemplate, CreateSlotComponent } from "./types";

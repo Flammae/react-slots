@@ -1,12 +1,14 @@
+import * as React from "react";
+import Children from "./children";
 import type {
-	SlotChildren,
+	Slots,
 	SlotComponent,
 	CreateSlotComponent,
 	SlotName,
+	SlotProps,
 } from "./types";
-import Children from "./children";
 
-class SlotProxyCreator<T extends SlotChildren> {
+class SlotProxyCreator<T extends Slots> {
 	constructor() {
 		// Function types have "name" and "length" properties on them which show up on hasOwnProperty check.
 		// We override those to let users name their slots "name" or "length" if they want.
@@ -32,28 +34,52 @@ class SlotProxyCreator<T extends SlotChildren> {
 		}
 	);
 
-	private getSlotComponent<Tn extends SlotName, Tp extends {}>(
-		slotName: Tn
-	): SlotComponent<Tp> {
+	private getSlotComponent<TName extends SlotName, TProps extends {}>(
+		slotName: TName
+	): SlotComponent<TProps> {
 		const that = this;
-		function SlotComponent(props: Tp) {
-			return that.children.get(slotName, props);
+
+		function SlotComponent(props?: SlotProps<TProps>): any {
+			const isChildrenProvided = that.children.has(slotName);
+
+			if (typeof props === "undefined") {
+				return isChildrenProvided;
+			}
+
+			const { children: slotChildren, ...rest } = props;
+
+			if (!isChildrenProvided) {
+				return slotChildren;
+			}
+
+			return that.children.get(slotName, rest);
 		}
+
 		return SlotComponent;
 	}
 
-	getSlotProxy(children: T) {
+	build(children: T): SlotProxyCreator<T> {
 		this.children.build(children);
+		return this;
+	}
+
+	getSlotProxy(): CreateSlotComponent<T> {
 		return this.SlotProxy;
 	}
 }
 
-export function useSlot<T extends SlotChildren>(
-	children: T
-): CreateSlotComponent<T> {
+/**
+ * Returns Slot component
+ */
+export function useSlot<T extends Slots>(children: T): CreateSlotComponent<T> {
 	const proxyCreator = new SlotProxyCreator<T>();
 
-	const proxy = proxyCreator.getSlotProxy(children);
+	const prevChildren = React.useRef<T>();
+	if (prevChildren.current !== children) {
+		proxyCreator.build(children);
+	}
+	let proxy = proxyCreator.getSlotProxy();
+	prevChildren.current = children;
 
 	return proxy;
 }

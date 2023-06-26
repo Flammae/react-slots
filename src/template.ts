@@ -1,9 +1,9 @@
-import { DEFAULT_TEMPLATE_AS, SLOT_NAME } from "./constants";
+import { SLOT_NAME } from "./constants";
 import type {
 	SlotName,
 	TemplateComponent,
 	CreateTemplate,
-	SlotableNode,
+	Slots,
 } from "./types";
 
 const templateFnCache: Map<SlotName, TemplateComponent<any, any>> = new Map();
@@ -49,7 +49,7 @@ export const Template = new Proxy(
 	}
 );
 
-/** Create typesafe template */
-export function createTemplate<T extends SlotableNode<any, any>>() {
+/** Create Typesafe Template */
+export function createTemplate<T extends Slots>() {
 	return Template as CreateTemplate<T>;
 }

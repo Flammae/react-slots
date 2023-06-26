@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 0.4.1
+
+### Patch Changes
+
+- 23f750d: added publish workflow
+
 ## 0.3.0
 
 ### Minor Changes

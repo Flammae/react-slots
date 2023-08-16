@@ -1,46 +1,15 @@
 {
-	"name": "@beqa/react-slots",
-	"private": false,
-	"version": "0.4.1",
-	"license": "MIT",
-	"types": "dist/index.d.ts",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
+	"name": "react-slots-monorepo",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
 	"scripts": {
-		"build": "tsup src/index.ts --format cjs,esm --dts",
-		"lint": "tsc",
-		"release": "pnpm run build && changeset publish"
+		"build:babel-plugin": "pnpm --filter babel-plugin-transform-react-slots run build",
+		"build:react-slots": "pnpm --filter @beqa/react-slots run build",
+		"test:babel-plugin": "pnpm --filter babel-plugin-transform-react-slots run test",
+		"test:react-slots": "pnpm --filter @beqa/react-slots run test"
 	},
-	"peerDependencies": {
-		"react": ">=17",
-		"react-dom": ">=17"
-	},
-	"peerDependenciesMeta": {
-		"react-dom": {
-			"optional": true
-		}
-	},
-	"keywords": [
-		"react",
-		"slots",
-		"template",
-		"useSlots",
-		"createTemplate",
-		"slot-name",
-		"slots in react",
-		"vue slots in react",
-		"svelte slots in react",
-		"web component slots in react"
-	],
-	"devDependencies": {
-		"@changesets/cli": "^2.26.1",
-		"@types/react": "^18.0.26",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
-		"tsup": "^7.0.0",
-		"typescript": "^4.9.4"
-	},
-	"dependencies": {
-		"ts-toolbelt": "^9.6.0"
-	}
+	"keywords": [],
+	"author": "",
+	"license": "ISC"
 }

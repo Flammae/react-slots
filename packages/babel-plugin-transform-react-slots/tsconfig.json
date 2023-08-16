@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"jsx": "react",
+		"target": "ES2022",
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"noUncheckedIndexedAccess": true,
+		"types": ["vitest/globals"]
+	}
+}

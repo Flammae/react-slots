@@ -146,6 +146,7 @@ function getValuesFromObjectPattern(
 			t.isObjectProperty(prop.node) &&
 			isIdentifierWithName(prop.node.key, pathToValue.at(-1)!)
 		) {
+			// TODO: object pattern can specify multiple keys with the same name as long as values are different
 			const name = pathToValue.pop();
 
 			if (t.isIdentifier(prop.node.value)) {

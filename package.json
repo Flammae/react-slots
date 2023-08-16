@@ -5,9 +5,9 @@
 	"main": "index.js",
 	"scripts": {
 		"build:babel-plugin": "pnpm --filter babel-plugin-transform-react-slots run build",
-		"build:react-slots": "pnpm --filter @beqa/react-slots run build",
+		"build:react-slots": "pnpm --filter react-slots run build",
 		"test:babel-plugin": "pnpm --filter babel-plugin-transform-react-slots run test",
-		"test:react-slots": "pnpm --filter @beqa/react-slots run test"
+		"test:react-slots": "pnpm --filter react-slots run test"
 	},
 	"keywords": [],
 	"author": "",

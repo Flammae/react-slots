@@ -1,19 +1,14 @@
 /* eslint-disable import/export */
-import * as React from "react";
 import { cleanup, render } from "@testing-library/react";
+import * as React from "react";
 import { afterEach } from "vitest";
 import {
-	Slot,
-	type SlotChildren,
-	createTemplate,
-	useSlot,
 	template,
+	useSlot,
+	type CreateTemplate,
+	type Slot,
+	type SlotChildren,
 } from "../src";
-import {
-	CreateTemplate,
-	SlotComponent,
-	SlotComponent_ComponentSignature,
-} from "../src/types";
 
 afterEach(() => {
 	cleanup();
@@ -144,7 +139,7 @@ test("`hasSlot` keeps track of whether content is provided", () => {
 	function HasSlotTest({ children }: Props) {
 		const { hasSlot } = useSlot(children);
 
-		return hasSlot.default ? "true" : "false";
+		return <>{hasSlot.default ? "true" : "false"}</>;
 	}
 
 	const hasSlotTestTemplate = template as CreateTemplate<Props["children"]>;
@@ -306,8 +301,6 @@ describe("Template component", () => {
 				</>
 			);
 		}
-
-		// TODO: Test that if children is optional in TAs it stays optional and other case
 
 		const { asFragment } = render(
 			<TemplateComponentTest>
@@ -580,12 +573,10 @@ describe("Slot function", () => {
 });
 
 describe("Template as slot function", () => {
-	// TODO: Test that ts works correctly with as=slot even when types are any
 	type ChildProps = {
 		children: SlotChildren<Slot<{ foo: string; bar: string }> | Slot<"named">>;
 	};
 	const childTemplate = template as CreateTemplate<ChildProps["children"]>;
-	// TODO: test that CreateTemplate excludes undefined
 	function Child({ children }: ChildProps) {
 		const { slot } = useSlot(children);
 		return (

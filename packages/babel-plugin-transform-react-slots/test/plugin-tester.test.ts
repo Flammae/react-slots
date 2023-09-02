@@ -8,6 +8,5 @@ pluginTester({
 	fixtureOutputExt: ".mjs",
 	babelOptions: {
 		parserOpts: { strictMode: true },
-		// plugins: ['@babel/plugin-proposal-export-default-from'],
 	},
 });

@@ -21,7 +21,7 @@ import {
 const LIB_SOURCE = "@beqa/react-slots";
 const IMPORTED_NODE = "useSlot";
 const SLOT_OBJECT_NAME = "slot";
-const DISABLED_REGEX = /\s*disable-transform-react-slots\s*/;
+const DISABLED_REGEX = /\s*@disable-transform-react-slots\s*/;
 
 function isDisabled(
 	comments: (t.CommentLine | t.CommentBlock)[] | null | undefined,

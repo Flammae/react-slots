@@ -54,7 +54,8 @@ export function skipTS(
 	if (
 		t.isTSAsExpression(nodePath.node) ||
 		t.isTSTypeAssertion(nodePath.node) ||
-		t.isTSSatisfiesExpression(nodePath.node)
+		t.isTSSatisfiesExpression(nodePath.node) ||
+		t.isTSInstantiationExpression(nodePath.node)
 	) {
 		return skipTS(nodePath.parentPath);
 	}
@@ -63,11 +64,23 @@ export function skipTS(
 }
 
 /**
- * ** Mutates pathToValue array**
- *
+ * checks if a node is an allowed expression or statement (doesn't break our logic)
+ */
+export function isUnbreaking(nodePath: NodePath<t.Node>): boolean {
+	if (
+		t.isLogicalExpression(nodePath.node) ||
+		t.isIfStatement(nodePath.node) ||
+		t.isExpressionStatement(nodePath.node)
+	) {
+		return true;
+	}
+	return false;
+}
+
+/**
  * If referenced identifier is an object in a Member expression,
  * check if this expression is accessing the value or an ancestor of the value.
- * If so, mutate pathToValue and return the parent node of the expression.
+ * If so, return the parent node of the expression.
  * Empty array means the value is accessed.
  * If the expression is accessing a different path, null is returned.
  *
@@ -124,8 +137,6 @@ export function goThroughMemberExpression(
 }
 
 /**
- * **Mutates the pathToValue array**.
- *
  * Get which identifiers in the object pattern hold the value (if any).
  * If no identifiers, return empty array.
  */
@@ -134,10 +145,13 @@ function getValuesFromObjectPattern(
 	pathToValue: PathToValue,
 	identifiers: Map<NodePath<t.Identifier>, PathToValue>
 ): void {
+	let restHasPath = true;
 	for (let prop of objectPattern.get("properties")) {
 		if (t.isRestElement(prop.node)) {
-			const identifier = prop.get("argument") as NodePath<t.Identifier>;
-			identifiers.set(identifier, pathToValue.slice());
+			if (restHasPath || pathToValue.at(-1) === ANY_PROPERTY) {
+				const identifier = prop.get("argument") as NodePath<t.Identifier>;
+				identifiers.set(identifier, pathToValue.slice());
+			}
 			break;
 		}
 
@@ -146,19 +160,17 @@ function getValuesFromObjectPattern(
 			t.isObjectProperty(prop.node) &&
 			isIdentifierWithName(prop.node.key, pathToValue.at(-1)!)
 		) {
+			restHasPath = false;
 			// TODO: object pattern can specify multiple keys with the same name as long as values are different
-			const name = pathToValue.pop();
+			const name = pathToValue.pop()!;
 
 			if (t.isIdentifier(prop.node.value)) {
 				identifiers.set(
 					prop.get("value") as NodePath<t.Identifier>,
 					pathToValue.slice()
 				);
-				if (name === ANY_PROPERTY) {
-					pathToValue.push(name);
-					continue;
-				}
-				break;
+				pathToValue.push(name);
+				continue;
 			}
 
 			if (t.isObjectPattern(prop.node.value)) {
@@ -167,12 +179,7 @@ function getValuesFromObjectPattern(
 					pathToValue,
 					identifiers
 				);
-
-				if (name === ANY_PROPERTY) {
-					pathToValue.push(name);
-					continue;
-				}
-				break;
+				pathToValue.push(name);
 			}
 		}
 	}
@@ -184,7 +191,7 @@ function getValuesFromObjectPattern(
  * Get values from variable declarator.
  * Supports direct assignment and object destructuring.
  * Returned map holds a new pathToValue for every specific identifier.
- * pathToValue that was passed as an argument will be the same as pathToValue
+ * `pathToValue` that was passed as an argument will be mutated to be the same as `pathToValue`
  * for the last (rightmost) identifier
  *
  * @throws {VarDeclarationError}

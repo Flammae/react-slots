@@ -74,3 +74,11 @@ function _functionName() {
 
   return g.anything(null); // MUST TRANSFORM
 }
+
+// The following syntax does nothing but should not throw;
+if (useSlotAlias) {
+}
+if (useSlotAlias().slot.name) {
+}
+((useSlotAlias && useSlotAlias().slot) || useSlotAlias().slot.default) ??
+  f.slot.default(null); // Must transform

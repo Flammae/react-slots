@@ -8,8 +8,9 @@ import {
 	ANY_PROPERTY,
 	jsxNameToCallee,
 	skipTS,
+	isUnbreaking,
 } from "./utils";
-import { default as syntaxJSX } from "@babel/plugin-syntax-jsx";
+import syntaxJSX from "@babel/plugin-syntax-jsx";
 import rawCodeStore from "./rawCodeStore";
 import {
 	UnsupportedMemberExpressionError,
@@ -21,36 +22,40 @@ import {
 const LIB_SOURCE = "@beqa/react-slots";
 const IMPORTED_NODE = "useSlot";
 const SLOT_OBJECT_NAME = "slot";
-const DISABLED_REGEX = /\s*@disable-transform-react-slots\s*/;
+const DISABLED_REGEX = /^\s*@disable-transform-react-slots\W/;
 
 function isDisabled(
 	comments: (t.CommentLine | t.CommentBlock)[] | null | undefined,
-	programBody: t.Statement[]
+	program: t.Program
 ) {
 	if (!comments) {
 		return false;
 	}
 
-	let currentIndex = 0;
+	const programStart = program.directives.length
+		? program.directives[0]?.start || 0
+		: program.body.length
+		? program.body[0]?.start || 0
+		: 0;
 
+	let currentIndex = 0;
 	while (
 		comments[currentIndex] &&
 		comments[currentIndex]!.start !== undefined &&
-		programBody[0] &&
-		programBody[0].start !== undefined &&
-		comments[currentIndex]!.start! < programBody[0].start!
+		comments[currentIndex]!.start! <= programStart
 	) {
-		if (DISABLED_REGEX.test(comments[currentIndex]!.value)) {
+		if (
+			comments[currentIndex]?.type === "CommentLine" &&
+			DISABLED_REGEX.test(comments[currentIndex]!.value)
+		) {
 			return true;
 		}
+		++currentIndex;
 	}
 
-	if (
-		(comments[currentIndex] && comments[currentIndex]!.start === undefined) ||
-		(programBody[0] && programBody[0].start !== undefined)
-	) {
+	if (comments[currentIndex] && comments[currentIndex]?.start === undefined) {
 		throw new Error(
-			"Could not read comments for @beqa/react-slots while looking for a `disable-transform-react-slots` pragma. Please open a new issue on our Github repo."
+			"Could not read comments for @beqa/react-slots while looking for a `@disable-transform-react-slots` pragma. Please open a new issue on our Github repo."
 		);
 	}
 
@@ -115,7 +120,7 @@ function findCallExpressions(
 
 		let parentPath = skipTS(nodePath.parentPath)!;
 
-		if (t.isExpressionStatement(parentPath.node)) {
+		if (isUnbreaking(parentPath)) {
 			continue;
 		}
 
@@ -224,7 +229,7 @@ function findJSXElements(
 				continue;
 			}
 
-			if (t.isExpressionStatement(parentPath.node)) {
+			if (isUnbreaking(parentPath)) {
 				// eg: ReactSlots.useSlot(); or slot.default; (no assignment) hurts no one
 				continue;
 			}
@@ -310,31 +315,30 @@ function transformJSXElements(element: NodePath<t.JSXElement>) {
 	);
 }
 
-type State<BabelState> = BabelState & {
-	jsxElements: Set<t.JSXElement>;
-};
-
-export default declare((api) => {
+export = declare((api) => {
 	api.assertVersion(7);
+
+	const jsxElementSet = new Set<t.JSXElement>();
 
 	return {
 		name: "transform-react-slots",
 		inherits: syntaxJSX,
 		pre(file) {
 			rawCodeStore.set(file.code);
+			jsxElementSet.clear();
 		},
-		post(file) {
+		post() {
 			rawCodeStore.set("");
 		},
 		visitor: {
 			Program: {
-				enter(path, _state) {
-					if (isDisabled(_state.file.ast.comments, path.node.body)) {
+				enter(path, state) {
+					// TODO: make sure type useSlot import does not count
+					if (isDisabled(state.file.ast.comments, path.node)) {
 						return;
 					}
 
 					const [imports, namespaceImports] = findImports(path);
-					// TODO: disallow var declarations
 
 					// Exit early if no useSlot imports
 					if (!imports.length && !namespaceImports.length) {
@@ -365,19 +369,14 @@ export default declare((api) => {
 						jsxElements
 					);
 
-					const state: State<typeof _state> = _state as any;
-
-					state.jsxElements = new Set(jsxElements.map((path) => path.node));
-
-					// transformJSXElements(jsxElements);
+					jsxElements.forEach((path) => {
+						jsxElementSet.add(path.node);
+					});
 				},
 			},
 			JSXElement: {
-				enter(path, _state) {
-					const state: State<typeof _state> = _state as any;
-
-					if (state.jsxElements.has(path.node)) {
-						state.jsxElements.delete(path.node);
+				enter(path) {
+					if (jsxElementSet.has(path.node)) {
 						transformJSXElements(path);
 					}
 				},

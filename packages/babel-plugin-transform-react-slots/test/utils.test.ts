@@ -5,7 +5,6 @@ import {
 	goThroughMemberExpression,
 	getValuesFromVarDeclarator,
 } from "../src/utils";
-import plugin from "../src";
 
 describe("goThroughMemberExpression", () => {
 	test("returns the first member expression when directly accessing the value; `pathToValue` becomes empty", () => {
@@ -45,7 +44,7 @@ describe("goThroughMemberExpression", () => {
 				});
 
 				const pathToValue = ["d", "c", "b"];
-				const parent = goThroughMemberExpression(pathToA, pathToValue);
+				goThroughMemberExpression(pathToA, pathToValue);
 				expect(pathToValue).toEqual(["d"]);
 			},
 		});
@@ -164,7 +163,6 @@ describe("getValueFromVarDeclarator", () => {
 				)) {
 					expect(identifier.node.name).toBe("b");
 					expect(newPathToValue).toEqual([]);
-					expect(pathToValue).toEqual([]);
 				}
 			},
 		});
@@ -181,7 +179,6 @@ describe("getValueFromVarDeclarator", () => {
 				)) {
 					expect(identifier.node.name).toBe("a");
 					expect(newPathToValue).toEqual(["b"]);
-					expect(pathToValue).toEqual(["b"]);
 				}
 			},
 		});
@@ -201,7 +198,6 @@ describe("getValueFromVarDeclarator", () => {
 				)) {
 					expect(identifier.node.name).toBe("rest2");
 					expect(newPathToValue).toEqual(["e", "d"]);
-					expect(pathToValue).toEqual(["e", "d"]);
 				}
 			},
 		});
@@ -219,7 +215,6 @@ describe("getValueFromVarDeclarator", () => {
 				)) {
 					expect(identifier.node.name).toBe("c");
 					expect(newPathToValue).toEqual(["d"]);
-					expect(pathToValue).toEqual(["d"]);
 				}
 			},
 		});
@@ -235,7 +230,6 @@ describe("getValueFromVarDeclarator", () => {
 
 				const identifiers = getValuesFromVarDeclarator(path, pathToValue);
 				expect(identifiers).toEqual(new Map());
-				expect(pathToValue).toEqual(["c"]);
 			},
 		});
 	});
@@ -264,6 +258,30 @@ describe("getValueFromVarDeclarator", () => {
 				currentEntry = iterator.next().value;
 				expect(currentEntry[0].node.name).toBe("rest");
 				expect(currentEntry[1]).toEqual([ANY_PROPERTY]);
+				expect(iterator.next().done).toBe(true);
+			},
+		});
+	});
+
+	test("returns multiple identifiers when object pattern declares the same value with different names", () => {
+		const ast = babel.parse(`let { a, a:b, a: {c} } = ['literally.anything']`)!;
+		babel.traverse(ast, {
+			VariableDeclarator(path) {
+				const pathToValue = ["c", "a"];
+
+				const identifiers = getValuesFromVarDeclarator(path, pathToValue);
+
+				let iterator = identifiers.entries();
+				let currentEntry = iterator.next().value;
+
+				expect(currentEntry[0].node.name).toBe("a");
+				expect(currentEntry[1]).toEqual(["c"]);
+				currentEntry = iterator.next().value;
+				expect(currentEntry[0].node.name).toBe("b");
+				expect(currentEntry[1]).toEqual(["c"]);
+				currentEntry = iterator.next().value;
+				expect(currentEntry[0].node.name).toBe("c");
+				expect(currentEntry[1]).toEqual([]);
 				expect(iterator.next().done).toBe(true);
 			},
 		});

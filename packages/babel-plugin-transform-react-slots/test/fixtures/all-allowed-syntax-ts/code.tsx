@@ -62,3 +62,12 @@ function _functionName() {
 
 	return <g.anything></g.anything>; // MUST TRANSFORM
 }
+
+// The following syntax does nothing but should not throw;
+if (useSlotAlias<TypeArg>) {
+}
+if (useSlotAlias().slot.name as unknown) {
+}
+(((useSlotAlias as any) && (useSlotAlias().slot as Something)) ||
+	useSlotAlias().slot.default<TypeArg>) ??
+	f.slot.default(null); // Must transform

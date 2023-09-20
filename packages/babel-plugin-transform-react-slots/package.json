@@ -1,23 +1,27 @@
 {
 	"name": "@beqa/babel-plugin-transform-react-slots",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"description": "",
+	"keywords": [],
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
-	"scripts": {
-		"build": "tsup src/index.ts --format cjs --cjsInterop --watch --external @babel/core",
-		"test": "vitest --globals"
-	},
-	"keywords": [],
+	"license": "MIT",
 	"author": "",
-	"license": "ISC",
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "tsup src/index.ts --format cjs,esm --dts",
+		"test": "vitest run utils --globals",
+		"test:watch": "vitest --globals"
+	},
 	"dependencies": {
 		"@babel/code-frame": "^7.22.10",
+		"@babel/core": "^7.22.9",
 		"@babel/helper-plugin-utils": "^7.22.5",
 		"@babel/plugin-syntax-jsx": "^7.22.5"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.22.9",
 		"@babel/plugin-syntax-typescript": "^7.22.5",
 		"@babel/preset-env": "^7.22.10",
 		"@babel/preset-typescript": "^7.22.5",
@@ -29,6 +33,7 @@
 		"@types/babel__traverse": "^7.20.1",
 		"babel-plugin-tester": "^11.0.4",
 		"tsup": "^7.2.0",
+		"typescript": "^5.2.2",
 		"vitest": "^0.33.0"
 	}
 }

@@ -161,7 +161,6 @@ function getValuesFromObjectPattern(
 			isIdentifierWithName(prop.node.key, pathToValue.at(-1)!)
 		) {
 			restHasPath = false;
-			// TODO: object pattern can specify multiple keys with the same name as long as values are different
 			const name = pathToValue.pop()!;
 
 			if (t.isIdentifier(prop.node.value)) {

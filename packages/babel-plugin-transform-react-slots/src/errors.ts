@@ -1,4 +1,4 @@
-import { types as t, type NodePath } from "@babel/core";
+import { types as t } from "@babel/core";
 import { codeFrameColumns } from "@babel/code-frame";
 import rawCodeStore from "./rawCodeStore";
 

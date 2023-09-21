@@ -67,7 +67,12 @@ function findImports(
 	path: NodePath<t.Program>
 ): [t.ImportSpecifier[], t.ImportNamespaceSpecifier[]] {
 	const importNodes = path.node.body.filter((node) => {
-		return t.isImportDeclaration(node) && node.source.value === LIB_SOURCE;
+		return (
+			t.isImportDeclaration(node) &&
+			node.source.value === LIB_SOURCE &&
+			node.importKind !== "type" &&
+			node.importKind !== "typeof"
+		);
 	}) as t.ImportDeclaration[];
 
 	let imports = [];
@@ -79,7 +84,9 @@ function findImports(
 				namespaceImports.push(specifier);
 			} else if (
 				t.isImportSpecifier(specifier) &&
-				(specifier.imported as any).name === IMPORTED_NODE
+				(specifier.imported as any).name === IMPORTED_NODE &&
+				specifier.importKind !== "typeof" &&
+				specifier.importKind !== "type"
 			) {
 				imports.push(specifier);
 			}
@@ -333,7 +340,6 @@ export = declare((api) => {
 		visitor: {
 			Program: {
 				enter(path, state) {
-					// TODO: make sure type useSlot import does not count
 					if (isDisabled(state.file.ast.comments, path.node)) {
 						return;
 					}

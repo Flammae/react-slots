@@ -593,8 +593,6 @@ describe("Template as slot function", () => {
 		);
 	}
 
-	// TODO: Test that template of Slot<"named"> can accept slot of Slot<{foo: string}> for `as` but require foo to be set
-
 	type TemplateAsSlotTestProps = {
 		children: SlotChildren<
 			| Slot<{ foo: string; bar: string; baz: string }>

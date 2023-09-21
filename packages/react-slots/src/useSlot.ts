@@ -96,7 +96,6 @@ class SlotProxyFactory<T extends SlotChildren> {
 export function useSlot<T extends SlotChildren>(
 	children: T
 ): { slot: CreateSlot<T>; hasSlot: HasSlot<T> } {
-	debugger;
 	const proxyCreator = new SlotProxyFactory<T>();
 
 	const prevChildren = React.useRef<T>();

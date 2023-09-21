@@ -213,7 +213,7 @@ type GetTemplateUnions<U> = U extends TemplateAsSlotComponentLikeElement<
  * >;
  * ```
  */
-export type CreateTemplate<T extends SlotChildren> = Any.Compute<
+export type CreateTemplate<T extends SlotChildren> = {} & Any.Compute<
 	UnionToIntersection<
 		GetTemplateUnions<Exclude<0 extends T & 1 ? SlotChildren : T, undefined>>
 	>,
@@ -259,7 +259,7 @@ type GetSlotComponentUnions<T> = T extends TemplateAsSlotComponentLikeElement<
 	? { [Name in N]: SlotComponent<P> }
 	: never;
 
-type CreateSlotComponent<T extends SlotChildren> = Any.Compute<
+type CreateSlotComponent<T extends SlotChildren> = {} & Any.Compute<
 	UnionToIntersection<
 		GetSlotComponentUnions<0 extends T & 1 ? SlotChildren : T>
 	>,

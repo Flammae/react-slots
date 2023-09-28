@@ -1,4 +1,4 @@
-import { createUnplugin } from "unplugin";
+import { UnpluginInstance, createUnplugin } from "unplugin";
 import { createFilter } from "@rollup/pluginutils";
 import { type Options, resolveOption, defaultInclude } from "./core/options";
 import { transformAsync } from "@babel/core";
@@ -81,4 +81,7 @@ export default createUnplugin<Options | undefined, false>((rawOptions) => {
 			},
 		},
 	};
-});
+}) as Pick<
+	UnpluginInstance<Options | undefined, false>,
+	"esbuild" | "rollup" | "vite"
+>;

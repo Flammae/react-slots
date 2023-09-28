@@ -3,7 +3,9 @@
 	"changelog": "@changesets/cli/changelog",
 	"commit": false,
 	"fixed": [],
-	"linked": [],
+	"linked": [
+		["babel-plugin-transform-react-slots", "unplugin-transform-react-slots"]
+	],
 	"access": "public",
 	"baseBranch": "main",
 	"updateInternalDependencies": "patch",

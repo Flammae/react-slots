@@ -1,39 +1,36 @@
 {
 	"name": "@beqa/babel-plugin-transform-react-slots",
-	"version": "0.0.0",
-	"description": "",
-	"keywords": [],
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
+	"version": "0.5.0",
+	"description": "The JSX to slot function transpilation plugin for babel",
+	"author": "Beqa",
 	"license": "MIT",
-	"author": "",
+	"keywords": [
+		"babel",
+		"react-slots"
+	],
+	"bugs": {
+		"url": "https://github.com/Flammae/react-slots/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Flammae/react-slots.git"
+	},
 	"publishConfig": {
 		"access": "public"
 	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "tsup src/index.ts --format cjs,esm --dts",
-		"test": "vitest run utils --globals",
-		"test:watch": "vitest --globals"
+		"test": "vitest run --globals",
+		"test:watch": "vitest --globals",
+		"typecheck": "tsc"
 	},
 	"dependencies": {
-		"@babel/code-frame": "^7.22.10",
-		"@babel/core": "^7.22.9",
+		"@babel/code-frame": "^7.22.13",
+		"@babel/core": "^7.23.0",
 		"@babel/helper-plugin-utils": "^7.22.5",
 		"@babel/plugin-syntax-jsx": "^7.22.5"
-	},
-	"devDependencies": {
-		"@babel/plugin-syntax-typescript": "^7.22.5",
-		"@babel/preset-env": "^7.22.10",
-		"@babel/preset-typescript": "^7.22.5",
-		"@babel/traverse": "^7.22.8",
-		"@babel/types": "^7.22.5",
-		"@types/babel__code-frame": "^7.0.3",
-		"@types/babel__core": "^7.20.1",
-		"@types/babel__helper-plugin-utils": "^7.10.0",
-		"@types/babel__traverse": "^7.20.1",
-		"babel-plugin-tester": "^11.0.4",
-		"tsup": "^7.2.0",
-		"typescript": "^5.2.2",
-		"vitest": "^0.33.0"
 	}
 }

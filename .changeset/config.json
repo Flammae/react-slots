@@ -4,7 +4,10 @@
 	"commit": false,
 	"fixed": [],
 	"linked": [
-		["babel-plugin-transform-react-slots", "unplugin-transform-react-slots"]
+		[
+			"@beqa/babel-plugin-transform-react-slots",
+			"@beqa/unplugin-transform-react-slots"
+		]
 	],
 	"access": "public",
 	"baseBranch": "main",

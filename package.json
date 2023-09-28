@@ -6,7 +6,7 @@
 		"build": "pnpm run -r build",
 		"test": "pnpm run -r test",
 		"typecheck": "pnpm run -r typecheck",
-		"release": "changeset publish"
+		"release": "pnpm run build && changeset publish"
 	},
 	"keywords": [],
 	"license": "MIT",

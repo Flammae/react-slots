@@ -14,18 +14,6 @@ afterEach(() => {
 	cleanup();
 });
 
-type Props = {
-	children?: SlotChildren<Slot<{ prop: string }>>;
-};
-function Child({ children }: Props) {
-	const slot = useSlot(children);
-}
-
-// test("Default slot renders default templates, elements with unspecified react-slot attribute, react-slot='default', regular react nodes", () => {
-//   // render()
-//   <Child></Child>
-// })
-
 describe("Default slot", () => {
 	type Props = {
 		children?: SlotChildren<Slot<{ prop: string }> | Slot<"named">>;
@@ -377,7 +365,7 @@ describe("Template component", () => {
 			return slot.default();
 		}
 
-		const { asFragment } = render(
+		render(
 			<Test>
 				{(prop: {}) => {
 					expect(prop).toEqual({});
@@ -642,7 +630,7 @@ describe("Template as slot function", () => {
 		`);
 	});
 	test("merges child slot's props and own props. Own props overrides child props. Keys are omitted", () => {
-		const { asFragment } = render(
+		render(
 			<TemplateAsSlotTest>
 				<template.default>
 					{(props: any) => {

@@ -209,10 +209,6 @@ test("SlotChildren", () => {
 		SlotChildren<Slot<"name" | "default", { foo: string } | { bar: string }>>
 	>();
 
-	type X = SlotChildren<
-		Slot<"name" | "default", { foo: string } | { bar: string }>
-	>;
-
 	// Should merge duplicate names
 	expectTypeOf<
 		TypeOrArray<
@@ -239,8 +235,6 @@ test("Template", () => {
 	expectTypeOf<CreateTemplate<any>>().toEqualTypeOf<
 		CreateTemplate<SlotChildren>
 	>();
-
-	let x = template.name[SLOT_NAME];
 
 	expectTypeOf(template.name[COMPONENT_TYPE]).toEqualTypeOf(
 		TEMPLATE_TYPE_IDENTIFIER

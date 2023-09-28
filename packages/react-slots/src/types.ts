@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Any, Function } from "ts-toolbelt";
+import { Any } from "ts-toolbelt";
 import {
 	COMPONENT_TYPE,
 	DEFAULT_TEMPLATE_AS,

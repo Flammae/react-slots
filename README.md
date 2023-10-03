@@ -4,6 +4,8 @@ The docs are work in progress.
 
 ## Quick look
 
+[Live example](https://stackblitz.com/edit/vitejs-vite-pz81vn?file=vite.config.ts,src%2FApp.tsx)
+
 ```tsx
 // DialogTrigger.tsx (Reusable DialogTrigger component)
 

@@ -98,12 +98,12 @@ export function useSlot<T extends SlotChildren>(
 ): { slot: CreateSlot<T>; hasSlot: HasSlot<T> } {
 	const proxyCreator = new SlotProxyFactory<T>();
 
-	const prevChildren = React.useRef<T>();
-	if (prevChildren.current !== children) {
-		proxyCreator.build(children);
-	}
+	// const prevChildren = React.useRef<T>();
+	// if (prevChildren.current !== children) {
+	proxyCreator.build(children);
+	// }
 	let proxy = proxyCreator.getSlotProxy();
-	prevChildren.current = children;
+	// prevChildren.current = children;
 
 	return { slot: proxy, hasSlot: proxyCreator.getHasSlot() };
 }

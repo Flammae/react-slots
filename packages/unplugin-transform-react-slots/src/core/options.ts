@@ -1,7 +1,7 @@
 type FilterPattern = RegExp | RegExp[];
 
 export interface Options {
-	include?: FilterPattern;
+	include?: RegExp;
 	exclude?: FilterPattern;
 }
 

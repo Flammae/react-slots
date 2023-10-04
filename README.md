@@ -2,58 +2,51 @@
 
 The docs are work in progress.
 
-## Quick look
+## Quick Guide: Using Slots to Create Reusable DialogTrigger and Dialog Components
 
-[Live example](https://stackblitz.com/edit/vitejs-vite-pz81vn?file=vite.config.ts,src%2FApp.tsx)
+For a live example, check out this [StackBlitz demo.](https://stackblitz.com/edit/vitejs-vite-pz81vn?file=vite.config.ts,src%2FApp.tsx)
+
+**Creating the DialogTrigger Component**
 
 ```tsx
-// DialogTrigger.tsx (Reusable DialogTrigger component)
-
 export type DialogTriggerProps = {
 	children: SlotChildren<
-		// Content labelled as 'trigger.'
-		// Shorthand for Slot<'trigger', {}>
-		| Slot<"trigger">
-		// Unlabelled content or content labelled as 'default,' with props
-		// Shorthand for Slot<'default', { isOpen: boolean; close: () => void }>
-		| Slot<{ isOpen: boolean; close: () => void }>
+		| Slot<"trigger"> // Content labeled as 'trigger.'
+		| Slot<{ isOpen: boolean; close: () => void }> // Unlabeled content or labeled as 'default,' with props
 	>;
 };
 
 export function DialogTrigger({ children }: DialogTriggerProps) {
 	const [isOpen, setIsOpen] = useState(false);
-	const { slot } = useSlot(children); // The magic
+	const { slot } = useSlot(children); // Inferred magic
 
 	return (
 		<div>
 			<button onClick={() => setIsOpen(true)}>
-				{/* 'Trigger it' is a fallback if the parent doesn't provide trigger content */}
+				{/* Render Trigger here or use 'Trigger it' as fallback if no trigger content provided. */}
 				<slot.trigger>Trigger it</slot.trigger>
 			</button>
 			{isOpen && (
-				// Element props are passed up to the parent
-				<slot.default isOpen={isOpen} close={() => setIsOpen(false)} />
+				<slot.default isOpen={isOpen} close={() => setIsOpen(false)} /> // Props are passed up to the parent
 			)}
 		</div>
 	);
 }
 
-// Create type-safe template for dialogTrigger by inferring DialogTrigger slots
+// Create a type-safe template for DialogTrigger by inferring DialogTrigger slots (optional)
 export const dialogTriggerTemplate =
 	createTemplate<DialogTriggerProps["children"]>();
 ```
 
-```tsx
-// Dialog.tsx (Reusable Dialog component)
+**Creating the Dialog Component**
 
+```tsx
 export type DialogProps = {
 	children: SlotChildren<
-		// Our header element. Shorthand for Slot<'default', {}>
-		| Slot
-		| Slot<"description", { style: object }>
-		// Since neither slot has props, we can combine type declaration for less keystrokes.
-		// Shorthand for Slot<Slot<'primaryAction'> | Slot<'secondaryAction'>
-		| Slot<"primaryAction" | "secondaryAction">
+		| Slot // Our header element. Shorthand for Slot<'default', {}>
+		| Slot<"description", { style: object }> // Slot for 'description' with style prop
+		| Slot<"primaryAction">
+		| Slot<"secondaryAction">
 	>;
 };
 
@@ -62,10 +55,9 @@ export function Dialog({ children }: DialogProps) {
 
 	return (
 		<dialog open>
-			<slot.default />
-			{/* Only render horizontal line under header if header is provided */}
-			{hasSlot && <hr />}
-			<slot.description style={{ position: "center" }} />
+			{/* Render a horizontal line under the header if a header is provided */}
+			{hasSlot && <hr />} <slot.default />
+			<slot.description style={{ textAlign: "center" }} />
 			<div className="actions">
 				<slot.secondaryAction />
 				<slot.primaryAction />
@@ -74,33 +66,33 @@ export function Dialog({ children }: DialogProps) {
 	);
 }
 
+// Create a type-safe template for the Dialog component (optional)
 export const dialogTemplate = createTemplate<DialogProps["children"]>();
 ```
 
-```tsx
-// App.tsx Consumer
+**Using in Your App**
 
+```tsx
 function App() {
 	return (
 		<DialogTrigger>
-			{/* `dialogTriggerTemplate` is type-safe way to provide labelled content to slots.
-					It's children will be rendered in place of the slots. 
-					Children can also be a function that returns a react node; when provided 
-					it receives the props passed by the child component. */}
-			<dialogTriggerTemplate.trigger>Delete</dialogTriggerTemplate.trigger>
-			{/* Shorthand for <template.default>{({close}) => ...}</template.default>
-					Since it's `default`  we don't have to wrap it with a template and it's still type-safe */}
+			{/* Label the span as "trigger" (not type-safe) */}
+			<span slot-name="trigger">Delete</span>
 			{({ close }) => (
+				// Normally this function would be wrapped in a template element that specifies the 'default' label:
+				// <template.default>{({close}) => {...}}</template.default>
+				// but since it's the default slot we can simplify it.
+				// `close` comes from the dialog's <slot.default close={() => setIsOpen(false)} />
 				<Dialog>
 					Are you sure you want to delete this item?
-					{/* You don't have to use type-safe template if you don't want to */}
-					<template.description>
+					{/* Type-safe template (the <p> element will be rendered in place of slot.description)  */}
+					<dialogTemplate.description>
 						{({ style }) => <p style={style}>This action can't be reversed</p>}
-					</template.description>
-					{/* For simple elements you can also provide label with `slot-name` but it's not type-safe */}
-					<button slot-name="primaryAction" onClick={close}>
-						I understand
-					</button>
+					</dialogTemplate.description>
+					{/* Regular template */}
+					<template.primary>
+						<button onClick={close}>I understand</button>
+					</template.primary>
 				</Dialog>
 			)}
 		</DialogTrigger>
@@ -243,7 +235,7 @@ Additionally, you can use the exclude option to exclude specific files or direct
 
 ## Troubleshooting
 
-`` Unsupported syntax: `useSlot` or an object holding a nested `useSlot` value used inside ...  ``
+``Unsupported syntax: `useSlot` or an object holding a nested `useSlot` value used inside ... ``
 
 If you encounter this error message after initializing the compile-time plugin for your project, it likely indicates that the plugin is applied after React elements have already been transpiled. To resolve this issue, you should adjust your configuration to ensure that the plugin runs before other syntax transformations.
 

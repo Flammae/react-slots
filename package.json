@@ -3,10 +3,10 @@
 	"main": "index.js",
 	"scripts": {
 		"all": "pnpm run build && pnpm run test && pnpm run typecheck",
-		"build": "pnpm run -r build",
-		"test": "pnpm run -r test",
-		"typecheck": "pnpm run -r typecheck",
-		"release": "pnpm run build && changeset publish"
+		"release": "pnpm run build && changeset publish",
+		"build": "pnpm -F \"./packages/**\" run -r build",
+		"test": "pnpm -F \"./packages/**\" run -r test",
+		"typecheck": "pnpm -F \"./packages/**\" run -r typecheck"
 	},
 	"keywords": [],
 	"license": "MIT",

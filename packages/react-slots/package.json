@@ -1,51 +1,51 @@
 {
-	"name": "@beqa/react-slots",
-	"private": false,
-	"version": "0.6.1",
-	"description": "The react-slots runtime library",
-	"author": "Beqa",
-	"license": "MIT",
-	"keywords": [
-		"react",
-		"slots",
-		"template",
-		"useSlot",
-		"slot-name",
-		"slots in react",
-		"vue slots in react",
-		"svelte slots in react",
-		"web component slots in react"
-	],
-	"publishConfig": {
-		"access": "public"
-	},
-	"bugs": {
-		"url": "https://github.com/Flammae/react-slots/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Flammae/react-slots.git"
-	},
-	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
-	"scripts": {
-		"build": "tsup src/index.ts --format cjs,esm --dts",
-		"release": "pnpm run build && changeset publish",
-		"test": "vitest run --globals --environment jsdom",
-		"test:watch": "vitest",
-		"typecheck": "vitest typecheck --watch=false"
-	},
-	"peerDependencies": {
-		"react": ">=17",
-		"react-dom": ">=17"
-	},
-	"peerDependenciesMeta": {
-		"react-dom": {
-			"optional": true
-		}
-	},
-	"dependencies": {
-		"ts-toolbelt": "^9.6.0"
-	}
+  "name": "@beqa/react-slots",
+  "private": false,
+  "version": "0.6.1",
+  "description": "The react-slots runtime library",
+  "author": "Beqa",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "slots",
+    "template",
+    "useSlot",
+    "slot-name",
+    "slots in react",
+    "vue slots in react",
+    "svelte slots in react",
+    "web component slots in react"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Flammae/react-slots/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Flammae/react-slots.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "release": "pnpm run build && changeset publish",
+    "test": "vitest run --globals --environment jsdom",
+    "test:watch": "vitest",
+    "typecheck": "vitest typecheck --watch=false"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "ts-toolbelt": "^9.6.0"
+  }
 }

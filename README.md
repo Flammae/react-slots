@@ -10,60 +10,60 @@ For a live example, check out this [StackBlitz demo.](https://stackblitz.com/edi
 
 ```tsx
 export type DialogTriggerProps = {
-	children: SlotChildren<
-		| Slot<"trigger"> // Content labeled as 'trigger.'
-		| Slot<{ isOpen: boolean; close: () => void }> // Unlabeled content or labeled as 'default,' with props
-	>;
+  children: SlotChildren<
+    | Slot<"trigger"> // Content labeled as 'trigger.'
+    | Slot<{ isOpen: boolean; close: () => void }> // Unlabeled content or labeled as 'default,' with props
+  >;
 };
 
 export function DialogTrigger({ children }: DialogTriggerProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const { slot } = useSlot(children); // Inferred magic
+  const [isOpen, setIsOpen] = useState(false);
+  const { slot } = useSlot(children); // Inferred magic
 
-	return (
-		<div>
-			<button onClick={() => setIsOpen(true)}>
-				{/* Render Trigger here or use 'Trigger it' as fallback if no trigger content provided. */}
-				<slot.trigger>Trigger it</slot.trigger>
-			</button>
-			{isOpen && (
-				<slot.default isOpen={isOpen} close={() => setIsOpen(false)} /> // Props are passed up to the parent
-			)}
-		</div>
-	);
+  return (
+    <div>
+      <button onClick={() => setIsOpen(true)}>
+        {/* Render Trigger here or use 'Trigger it' as fallback if no trigger content provided. */}
+        <slot.trigger>Trigger it</slot.trigger>
+      </button>
+      {isOpen && (
+        <slot.default isOpen={isOpen} close={() => setIsOpen(false)} /> // Props are passed up to the parent
+      )}
+    </div>
+  );
 }
 
 // Create a type-safe template for DialogTrigger by inferring DialogTrigger slots (optional)
 export const dialogTriggerTemplate =
-	createTemplate<DialogTriggerProps["children"]>();
+  createTemplate<DialogTriggerProps["children"]>();
 ```
 
 **Creating the Dialog Component**
 
 ```tsx
 export type DialogProps = {
-	children: SlotChildren<
-		| Slot // Our header element. Shorthand for Slot<'default', {}>
-		| Slot<"description", { style: object }> // Slot for 'description' with style prop
-		| Slot<"primaryAction">
-		| Slot<"secondaryAction">
-	>;
+  children: SlotChildren<
+    | Slot // Our header element. Shorthand for Slot<'default', {}>
+    | Slot<"description", { style: object }> // Slot for 'description' with style prop
+    | Slot<"primaryAction">
+    | Slot<"secondaryAction">
+  >;
 };
 
 export function Dialog({ children }: DialogProps) {
-	const { slot, hasSlot } = useSlot(children);
+  const { slot, hasSlot } = useSlot(children);
 
-	return (
-		<dialog open>
-			{/* Render a horizontal line under the header if a header is provided */}
-			{hasSlot && <hr />} <slot.default />
-			<slot.description style={{ textAlign: "center" }} />
-			<div className="actions">
-				<slot.secondaryAction />
-				<slot.primaryAction />
-			</div>
-		</dialog>
-	);
+  return (
+    <dialog open>
+      {/* Render a horizontal line under the header if a header is provided */}
+      {hasSlot && <hr />} <slot.default />
+      <slot.description style={{ textAlign: "center" }} />
+      <div className="actions">
+        <slot.secondaryAction />
+        <slot.primaryAction />
+      </div>
+    </dialog>
+  );
 }
 
 // Create a type-safe template for the Dialog component (optional)
@@ -74,29 +74,29 @@ export const dialogTemplate = createTemplate<DialogProps["children"]>();
 
 ```tsx
 function App() {
-	return (
-		<DialogTrigger>
-			{/* Label the span as "trigger" (not type-safe) */}
-			<span slot-name="trigger">Delete</span>
-			{({ close }) => (
-				// Normally this function would be wrapped in a template element that specifies the 'default' label:
-				// <template.default>{({close}) => {...}}</template.default>
-				// but since it's the default slot we can simplify it.
-				// `close` comes from the dialog's <slot.default close={() => setIsOpen(false)} />
-				<Dialog>
-					Are you sure you want to delete this item?
-					{/* Type-safe template (the <p> element will be rendered in place of slot.description)  */}
-					<dialogTemplate.description>
-						{({ style }) => <p style={style}>This action can't be reversed</p>}
-					</dialogTemplate.description>
-					{/* Regular template */}
-					<template.primary>
-						<button onClick={close}>I understand</button>
-					</template.primary>
-				</Dialog>
-			)}
-		</DialogTrigger>
-	);
+  return (
+    <DialogTrigger>
+      {/* Label the span as "trigger" (not type-safe) */}
+      <span slot-name="trigger">Delete</span>
+      {({ close }) => (
+        // Normally this function would be wrapped in a template element that specifies the 'default' label:
+        // <template.default>{({close}) => {...}}</template.default>
+        // but since it's the default slot we can simplify it.
+        // `close` comes from the dialog's <slot.default close={() => setIsOpen(false)} />
+        <Dialog>
+          Are you sure you want to delete this item?
+          {/* Type-safe template (the <p> element will be rendered in place of slot.description)  */}
+          <dialogTemplate.description>
+            {({ style }) => <p style={style}>This action can't be reversed</p>}
+          </dialogTemplate.description>
+          {/* Regular template */}
+          <template.primary>
+            <button onClick={close}>I understand</button>
+          </template.primary>
+        </Dialog>
+      )}
+    </DialogTrigger>
+  );
 }
 ```
 
@@ -113,7 +113,7 @@ The compile time plugin is required to transform slot elements returned by useSl
 ```tsx
 // Before transpilation
 <slot.default prop1={"foo"} prop2={42}>
-	Fallback
+  Fallback
 </slot.default>;
 // After transpilation
 slot.default("Fallback", { prop1: "foo", prop2: 42 });
@@ -156,7 +156,7 @@ import unplugin from "@beqa/unplugin-transform-react-slots";
 import react from "@vitejs/plugin-react";
 
 export default {
-	plugins: [unplugin.vite(), react()],
+  plugins: [unplugin.vite(), react()],
 };
 ```
 
@@ -176,7 +176,7 @@ import unplugin from "@beqa/unplugin-transform-react-slots";
 
 // esbuild.config.js
 await build({
-	plugins: [unplugin.esbuild()],
+  plugins: [unplugin.esbuild()],
 });
 ```
 
@@ -196,7 +196,7 @@ import unplugin from "@beqa/unplugin-transform-react-slots";
 
 // esbuild.config.js
 await build({
-	plugins: [unplugin.rollup()],
+  plugins: [unplugin.rollup()],
 });
 ```
 
@@ -206,12 +206,12 @@ await build({
 
 ```tsx
 type Options = {
-	include: RegEx;
-	exclude: RegEx | RegEx[];
+  include: RegEx;
+  exclude: RegEx | RegEx[];
 };
 
 const options = {
-	include: /\.(tsx)|(jsx)|(js)/,
+  include: /\.(tsx)|(jsx)|(js)/,
 } satisfies Options;
 
 unplugin.yourBundler();

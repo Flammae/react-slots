@@ -49,7 +49,7 @@ if (true) {
           prop1: 1,
           prop2: "string",
           prop3: true,
-        }
+        },
       )
     }
   />;

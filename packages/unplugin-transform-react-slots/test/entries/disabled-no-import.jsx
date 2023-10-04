@@ -2,13 +2,13 @@
 import * as React from "react";
 
 function useSlot() {
-	return {
-		slot: {
-			default: function () {
-				return <div />;
-			},
-		},
-	};
+  return {
+    slot: {
+      default: function () {
+        return <div />;
+      },
+    },
+  };
 }
 
 const { slot } = useSlot();

@@ -1,17 +1,17 @@
 {
-	"compilerOptions": {
-		"noEmit": true,
-		"target": "ESNext",
-		"module": "Node16",
-		"lib": ["es2022"],
-		"strict": true,
-		"esModuleInterop": true,
-		"moduleResolution": "Node16",
-		"forceConsistentCasingInFileNames": true,
-		"skipLibCheck": true,
-		"noUnusedLocals": true,
-		"noUncheckedIndexedAccess": false,
-		"jsx": "preserve",
-		"types": ["vitest/globals"]
-	}
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "ESNext",
+    "module": "Node16",
+    "lib": ["es2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node16",
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": false,
+    "jsx": "preserve",
+    "types": ["vitest/globals"]
+  }
 }

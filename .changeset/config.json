@@ -1,16 +1,16 @@
 {
-	"$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
-	"changelog": "@changesets/cli/changelog",
-	"commit": false,
-	"fixed": [],
-	"linked": [
-		[
-			"@beqa/babel-plugin-transform-react-slots",
-			"@beqa/unplugin-transform-react-slots"
-		]
-	],
-	"access": "public",
-	"baseBranch": "main",
-	"updateInternalDependencies": "patch",
-	"ignore": []
+  "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    [
+      "@beqa/babel-plugin-transform-react-slots",
+      "@beqa/unplugin-transform-react-slots"
+    ]
+  ],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
 }

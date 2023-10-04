@@ -1,36 +1,36 @@
 {
-	"name": "@beqa/babel-plugin-transform-react-slots",
-	"version": "0.6.1",
-	"description": "The JSX to slot function transpilation plugin for babel",
-	"author": "Beqa",
-	"license": "MIT",
-	"keywords": [
-		"babel",
-		"react-slots"
-	],
-	"bugs": {
-		"url": "https://github.com/Flammae/react-slots/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Flammae/react-slots.git"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
-	"scripts": {
-		"build": "tsup src/index.ts --format cjs,esm --dts",
-		"test": "vitest run --globals",
-		"test:watch": "vitest --globals",
-		"typecheck": "tsc"
-	},
-	"dependencies": {
-		"@babel/code-frame": "^7.22.13",
-		"@babel/core": "^7.23.0",
-		"@babel/helper-plugin-utils": "^7.22.5",
-		"@babel/plugin-syntax-jsx": "^7.22.5"
-	}
+  "name": "@beqa/babel-plugin-transform-react-slots",
+  "version": "0.6.1",
+  "description": "The JSX to slot function transpilation plugin for babel",
+  "author": "Beqa",
+  "license": "MIT",
+  "keywords": [
+    "babel",
+    "react-slots"
+  ],
+  "bugs": {
+    "url": "https://github.com/Flammae/react-slots/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Flammae/react-slots.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest run --globals",
+    "test:watch": "vitest --globals",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@babel/code-frame": "^7.22.13",
+    "@babel/core": "^7.23.0",
+    "@babel/helper-plugin-utils": "^7.22.5",
+    "@babel/plugin-syntax-jsx": "^7.22.5"
+  }
 }

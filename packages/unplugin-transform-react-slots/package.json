@@ -1,63 +1,63 @@
 {
-	"name": "@beqa/unplugin-transform-react-slots",
-	"version": "0.6.1",
-	"description": "JSX to slot function transpilation plugin for some of the common build systems",
-	"author": "Beqa",
-	"license": "MIT",
-	"keywords": [
-		"unplugin",
-		"rollup",
-		"vite",
-		"esbuild",
-		"react-slots"
-	],
-	"publishConfig": {
-		"access": "public"
-	},
-	"bugs": {
-		"url": "https://github.com/Flammae/react-slots/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Flammae/react-slots.git"
-	},
-	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"require": "./dist/index.js",
-			"import": "./dist/index.mjs"
-		},
-		"./vite": {
-			"require": "./dist/vite.js",
-			"import": "./dist/vite.mjs"
-		},
-		"./rollup": {
-			"require": "./dist/rollup.js",
-			"import": "./dist/rollup.mjs"
-		},
-		"./esbuild": {
-			"require": "./dist/esbuild.js",
-			"import": "./dist/esbuild.mjs"
-		}
-	},
-	"scripts": {
-		"build": "tsup",
-		"test": "pnpm run build && pnpm run test:build && pnpm run test:check",
-		"test:watch": "pnpm run build && pnpm run test:build && vitest",
-		"test:build": "tsx test/bundleTests",
-		"test:check": "vitest run",
-		"typecheck": "tsc"
-	},
-	"dependencies": {
-		"@babel/core": "^7.23.0",
-		"@babel/plugin-syntax-typescript": "^7.22.5",
-		"@beqa/babel-plugin-transform-react-slots": "workspace:*",
-		"@rollup/pluginutils": "^5.0.4",
-		"unplugin": "^1.5.0"
-	},
-	"devDependencies": {
-		"@beqa/react-slots": "workspace:*"
-	}
+  "name": "@beqa/unplugin-transform-react-slots",
+  "version": "0.6.1",
+  "description": "JSX to slot function transpilation plugin for some of the common build systems",
+  "author": "Beqa",
+  "license": "MIT",
+  "keywords": [
+    "unplugin",
+    "rollup",
+    "vite",
+    "esbuild",
+    "react-slots"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Flammae/react-slots/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Flammae/react-slots.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./vite": {
+      "require": "./dist/vite.js",
+      "import": "./dist/vite.mjs"
+    },
+    "./rollup": {
+      "require": "./dist/rollup.js",
+      "import": "./dist/rollup.mjs"
+    },
+    "./esbuild": {
+      "require": "./dist/esbuild.js",
+      "import": "./dist/esbuild.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "pnpm run build && pnpm run test:build && pnpm run test:check",
+    "test:watch": "pnpm run build && pnpm run test:build && vitest",
+    "test:build": "tsx test/bundleTests",
+    "test:check": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/plugin-syntax-typescript": "^7.22.5",
+    "@beqa/babel-plugin-transform-react-slots": "workspace:*",
+    "@rollup/pluginutils": "^5.0.4",
+    "unplugin": "^1.5.0"
+  },
+  "devDependencies": {
+    "@beqa/react-slots": "workspace:*"
+  }
 }

@@ -4,5 +4,5 @@ import unplugin from "@beqa/unplugin-transform-react-slots";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [unplugin.vite(), react()],
+  plugins: [unplugin.vite(), react()],
 });

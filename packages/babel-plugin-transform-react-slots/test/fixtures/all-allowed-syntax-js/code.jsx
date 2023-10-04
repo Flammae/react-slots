@@ -7,38 +7,38 @@ const b = ReactSlots;
 let c = b.useSlot;
 const d = ReactSlots.useSlot;
 let {
-	slot: { ...e },
+  slot: { ...e },
 } = b.useSlot(); // <e /> but won't transform because it's lower case
 
 // Transformation can be done in any scope
 if (true) {
-	a(); // Ignore, not using returned value
-	let e = b.useSlot(); // <e.slot.anything />
-	const { f } = c(); // Ignore, f is not a slot
-	let { slot, g } = d(); // <slot.anything />
-	const { slot: h } = useSlot(); // <h.anything />
-	let {
-		slot: { i: SlotName },
-	} = useSlot(); // <SlotName />
-	const { ...j } = e; // <j.slot.anything />;
-	let { k: Anything, ...l } = ReactSlots.useSlot().slot; // <Anything /> <l.anythingElse />
+  a(); // Ignore, not using returned value
+  let e = b.useSlot(); // <e.slot.anything />
+  const { f } = c(); // Ignore, f is not a slot
+  let { slot, g } = d(); // <slot.anything />
+  const { slot: h } = useSlot(); // <h.anything />
+  let {
+    slot: { i: SlotName },
+  } = useSlot(); // <SlotName />
+  const { ...j } = e; // <j.slot.anything />;
+  let { k: Anything, ...l } = ReactSlots.useSlot().slot; // <Anything /> <l.anythingElse />
 
-	e.slot.anything(); // Ignore, not a jsx element
-	<slot.anything />; // MUST TRANSFORM
-	<h.anything>children</h.anything>; // MUST TRANSFORM
-	<SlotName prop1={1} prop2="string" prop3></SlotName>; // MUST TRANSFORM
-	<div>
-		{/* MUST TRANSFORM */}
-		<j.slot.anything />
-	</div>;
-	<div
-		prop1={
-			// MUST TRANSFORM BOTH
-			<Anything prop1={1} prop2="string" prop3>
-				<l.anythingElse prop1={1} prop2="string" prop3 />
-			</Anything>
-		}
-	/>;
+  e.slot.anything(); // Ignore, not a jsx element
+  <slot.anything />; // MUST TRANSFORM
+  <h.anything>children</h.anything>; // MUST TRANSFORM
+  <SlotName prop1={1} prop2="string" prop3></SlotName>; // MUST TRANSFORM
+  <div>
+    {/* MUST TRANSFORM */}
+    <j.slot.anything />
+  </div>;
+  <div
+    prop1={
+      // MUST TRANSFORM BOTH
+      <Anything prop1={1} prop2="string" prop3>
+        <l.anythingElse prop1={1} prop2="string" prop3 />
+      </Anything>
+    }
+  />;
 }
 
 <e />; // won't transform because it's a lowercase name and jsx won't treat it as a variable name.
@@ -50,12 +50,12 @@ let f = c();
 <f.some_otherProperty />; // won't transform because not accessing slot property on c();
 
 function _functionName() {
-	let f = c;
-	let {
-		slot: { ...g },
-	} = f(); // <g.anything />
+  let f = c;
+  let {
+    slot: { ...g },
+  } = f(); // <g.anything />
 
-	return <g.anything></g.anything>; // MUST TRANSFORM
+  return <g.anything></g.anything>; // MUST TRANSFORM
 }
 
 // The following syntax does nothing but should not throw;
@@ -64,5 +64,5 @@ if (useSlotAlias) {
 if (useSlotAlias().slot.name) {
 }
 ((useSlotAlias && useSlotAlias().slot) || useSlotAlias().slot.default) ?? (
-	<f.slot.default /> // Must transform
+  <f.slot.default /> // Must transform
 );

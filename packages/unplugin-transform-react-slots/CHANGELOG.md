@@ -1,5 +1,13 @@
 # @beqa/unplugin-transform-react-slots
 
+## 0.6.2
+
+### Patch Changes
+
+- Fixed the doc link
+- Updated dependencies
+  - @beqa/babel-plugin-transform-react-slots@0.6.2
+
 ## 0.6.1
 
 ### Patch Changes

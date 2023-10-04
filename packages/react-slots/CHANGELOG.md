@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 0.6.2
+
+### Patch Changes
+
+- Fixed the doc link
+
 ## 0.6.1
 
 ### Patch Changes

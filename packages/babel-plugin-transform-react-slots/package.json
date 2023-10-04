@@ -1,6 +1,6 @@
 {
   "name": "@beqa/babel-plugin-transform-react-slots",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "The JSX to slot function transpilation plugin for babel",
   "author": "Beqa",
   "license": "MIT",

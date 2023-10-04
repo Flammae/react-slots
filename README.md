@@ -214,7 +214,7 @@ const options = {
   include: /\.(tsx)|(jsx)|(js)/,
 } satisfies Options;
 
-unplugin.yourBundler();
+unplugin.yourBundler(options);
 ```
 
 `unplugin-transform-react-slots` is designed to be fast at finding and transforming React slots. By default, it checks every JavaScript (js), JSX (jsx), and TypeScript (tsx) file in your project, excluding files in the node_modules directory. However, you can optimize its performance further by using specific options.

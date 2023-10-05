@@ -1,6 +1,15 @@
-# @beqa/react-slots - Responsible React Parenting
+# @beqa/react-slots - Responsible React Parenting (docs are a work in progress)
 
-The docs are work in progress.
+@beqa/react-slots brings the slot pattern from Vue and Svelte to React, offering a minimal API that retains all the features you expect while providing unmatched type safety.
+
+## Why Use the Slot Pattern:
+
+- **Structured Children:** With the slot pattern, your component's children become key-value pairs rather than a simple array. This enables you to indicate where different parts of parent-provided slot content should be rendered.
+- **Resilience to Change:** Slot-based components are more adaptable to change. You can start with a basic set of children and gradually add conditional rendering, new UI elements, fallback content, and data passing without breaking existing code that uses your components.
+- **Convenient APIs:** The library provides additional APIs like the Template's `as` prop, adding convenience to your component development.
+- **Fixing React-Specific Problems:** "@beqa/react-slots" addresses React-specific issues like alternatives to React.Children APIs and React.CloneElement that provide solutions you actually want to use.
+
+While these docs are a work in progress, we recommend checking out [Vue's slots documentation](https://vuejs.org/guide/components/slots.html). You'll easily find corresponding APIs and discover how @beqa/react-slots can help you write better code.
 
 ## Quick Guide: Using Slots to Create Reusable DialogTrigger and Dialog Components
 

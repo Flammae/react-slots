@@ -211,7 +211,8 @@ await build({
 
 </details>
 
-### Performance Optimization with Unplugin Options
+<details>
+  <summary><strong>Performance Optimization with Unplugin Options<strong></summary>
 
 ```tsx
 type Options = {
@@ -241,6 +242,8 @@ With this configuration, the plugin will only check .tsx and .jsx files in your 
 **exclude Option**
 
 Additionally, you can use the exclude option to exclude specific files or directories from being processed. This can be useful for excluding configuration files or large files that don't need slot transformation:
+
+</details>
 
 ## Troubleshooting
 

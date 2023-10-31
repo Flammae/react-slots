@@ -64,8 +64,9 @@ export function Dialog({ children }: DialogProps) {
 
   return (
     <dialog open>
+      <slot.default />
       {/* Render a horizontal line under the header if a header is provided */}
-      {hasSlot && <hr />} <slot.default />
+      {hasSlot && <hr />}
       <slot.description style={{ textAlign: "center" }} />
       <div className="actions">
         <slot.secondaryAction />
@@ -212,7 +213,7 @@ await build({
 </details>
 
 <details>
-  <summary><strong>Performance Optimization with Unplugin Options<strong></summary>
+  <summary><strong>Performance Optimization with Unplugin Options</strong></summary>
 
 ```tsx
 type Options = {

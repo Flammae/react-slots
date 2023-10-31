@@ -1,42 +1,92 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+:root {
+  color-scheme: only dark;
+  font-family: "Roboto", sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 1.6rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+
+.ReactModal__Overlay {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.ReactModal__Content {
+  position: unset !important;
+  inset: unset !important;
+  background-color: Canvas !important;
+  color: CanvasText !important;
+  border-radius: 1.5rem !important;
+  border: 2px solid skyblue !important;
+  padding: 1.5rem !important;
+  width: 100%;
+  max-width: 30rem;
+  min-height: 15rem;
+  display: grid;
+  box-shadow: 0 2px 12px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dialog {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.dialog > * + * {
+  margin: 1em 0 0;
+}
+
+.dialog__title {
+  font-size: 1.5rem;
+  font-weight: normal;
   text-align: center;
+  margin: 0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.dialog__actions {
+  justify-self: flex-end;
+  display: flex;
+  gap: 0.5rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.button {
+  height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 1.25rem;
+  border: 0;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.button--primary {
+  background-color: skyblue;
+  color: rgba(0, 0, 0, 0.8);
+
+  &:hover {
+    color: black;
   }
-  to {
-    transform: rotate(360deg);
+}
+
+.button--secondary {
+  background-color: transparent;
+  opacity: 0.9;
+
+  &:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.08);
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

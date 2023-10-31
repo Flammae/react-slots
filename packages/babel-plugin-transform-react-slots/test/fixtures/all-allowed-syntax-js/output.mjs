@@ -23,28 +23,28 @@ if (true) {
   let { k: Anything, ...l } = ReactSlots.useSlot().slot; // <Anything /> <l.anythingElse />
 
   e.slot.anything(); // Ignore, not a jsx element
-  slot.anything(null); // MUST TRANSFORM
-  h.anything(<>children</>); // MUST TRANSFORM
-  SlotName(null, {
+  slot.anything(<default-content-wrapper />); // MUST TRANSFORM
+  h.anything(<default-content-wrapper>children</default-content-wrapper>); // MUST TRANSFORM
+  SlotName(<default-content-wrapper />, {
     prop1: 1,
     prop2: "string",
     prop3: true,
   }); // MUST TRANSFORM
   <div>
     {/* MUST TRANSFORM */}
-    {j.slot.anything(null)}
+    {j.slot.anything(<default-content-wrapper />)}
   </div>;
   <div
     prop1={
       // MUST TRANSFORM BOTH
       Anything(
-        <>
-          {l.anythingElse(null, {
+        <default-content-wrapper>
+          {l.anythingElse(<default-content-wrapper />, {
             prop1: 1,
             prop2: "string",
             prop3: true,
           })}
-        </>,
+        </default-content-wrapper>,
         {
           prop1: 1,
           prop2: "string",
@@ -68,7 +68,7 @@ function _functionName() {
     slot: { ...g },
   } = f(); // <g.anything />
 
-  return g.anything(null); // MUST TRANSFORM
+  return g.anything(<default-content-wrapper />); // MUST TRANSFORM
 }
 
 // The following syntax does nothing but should not throw;
@@ -77,4 +77,4 @@ if (useSlotAlias) {
 if (useSlotAlias().slot.name) {
 }
 ((useSlotAlias && useSlotAlias().slot) || useSlotAlias().slot.default) ??
-  f.slot.default(null); // Must transform
+  f.slot.default(<default-content-wrapper />); // Must transform

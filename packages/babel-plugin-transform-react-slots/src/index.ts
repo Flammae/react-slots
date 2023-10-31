@@ -23,6 +23,7 @@ const LIB_SOURCE = "@beqa/react-slots";
 const IMPORTED_NODE = "useSlot";
 const SLOT_OBJECT_NAME = "slot";
 const DISABLED_REGEX = /^\s*@disable-transform-react-slots\W/;
+const DEFAULT_CONTENT_WRAPPER = "default-content-wrapper";
 
 function isDisabled(
   comments: (t.CommentLine | t.CommentBlock)[] | null | undefined,
@@ -282,7 +283,6 @@ function transformJSXElements(element: NodePath<t.JSXElement>) {
     if (t.isJSXSpreadAttribute(attr)) {
       return t.spreadElement(attr.argument);
     }
-    attr.value;
 
     return t.objectProperty(
       t.isJSXNamespacedName(attr.name)
@@ -305,12 +305,21 @@ function transformJSXElements(element: NodePath<t.JSXElement>) {
     jsxNameToCallee(element.node.openingElement.name),
     [
       defaultContent.length
-        ? t.jSXFragment(
-            t.jSXOpeningFragment(),
-            t.jSXClosingFragment(),
+        ? t.jsxElement(
+            t.jsxOpeningElement(t.jsxIdentifier(DEFAULT_CONTENT_WRAPPER), []),
+            t.jsxClosingElement(t.jsxIdentifier(DEFAULT_CONTENT_WRAPPER)),
             defaultContent,
           )
-        : t.nullLiteral(),
+        : t.jsxElement(
+            t.jsxOpeningElement(
+              t.jsxIdentifier(DEFAULT_CONTENT_WRAPPER),
+              [],
+              true,
+            ),
+            null,
+            [],
+            true,
+          ),
       (props.length && t.objectExpression(props)) as t.ObjectExpression,
     ].filter(Boolean),
   );

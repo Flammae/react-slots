@@ -8,6 +8,8 @@ import type {
   HasSlot,
 } from "./types";
 import { COMPONENT_TYPE } from "./constants";
+import { HiddenArg } from "./HiddenArg";
+import { OverrideConfig } from "./OverrideNode";
 
 class SlotProxyFactory<T extends SlotChildren> {
   private children = new Children();
@@ -37,14 +39,17 @@ class SlotProxyFactory<T extends SlotChildren> {
         defaultNode?: React.ReactNode | SlotProps<{}>,
         props?: {},
         key?: React.Key,
+        hiddenPreviousConfig?: HiddenArg<OverrideConfig[]>,
+        hiddenPreviousDefaultNode?: HiddenArg<React.ReactNode>,
       ) => {
         if (
           !React.isValidElement(defaultNode) &&
           typeof defaultNode === "object" &&
-          defaultNode !== null
+          defaultNode !== null &&
+          !(Symbol.iterator in defaultNode)
         ) {
           throw new Error(
-            "To utilize slots as JSX elements, it's essential to enable `babel-plugin-transform-react-slots`. Alternatively, you can opt for the function signature instead.",
+            "To use slots as JSX elements, it's essential to enable `babel-plugin-transform-react-slots`. Alternatively, you can opt for the function signature instead.",
           );
         }
 
@@ -55,7 +60,7 @@ class SlotProxyFactory<T extends SlotChildren> {
           _props = {};
         } else if (typeof props !== "object") {
           throw new Error(
-            "`props` mus be an object, instead saw " + typeof props,
+            "`props` must be an object, instead saw " + typeof props,
           );
         } else if ("key" in props) {
           let { key, ...rest } = props;
@@ -65,7 +70,19 @@ class SlotProxyFactory<T extends SlotChildren> {
           _props = props;
         }
 
-        return that.children.get(slotName, defaultNode, _props, _key);
+        return that.children.get(
+          slotName,
+          defaultNode,
+          _props,
+          hiddenPreviousConfig && hiddenPreviousConfig instanceof HiddenArg
+            ? hiddenPreviousConfig.arg
+            : [],
+          hiddenPreviousDefaultNode &&
+            hiddenPreviousDefaultNode instanceof HiddenArg
+            ? hiddenPreviousDefaultNode.arg
+            : [],
+          _key,
+        );
       },
       {
         [COMPONENT_TYPE]: "slot" as const,

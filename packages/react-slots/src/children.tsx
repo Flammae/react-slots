@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { SlotChildren, TemplateComponent } from "./types";
+import type { SlotChildren } from "./types";
 import {
   isNamedSlot,
   isTemplateElement,
@@ -7,34 +7,26 @@ import {
   isSlotComponent,
 } from "./typeGuards";
 import { DEFAULT_SLOT_NAME, DEFAULT_TEMPLATE_AS, SLOT_NAME } from "./constants";
-
-function forEachSlot(
-  children: SlotChildren,
-  callback: (child: SlotChildren) => void,
-): void {
-  switch (children) {
-    case null:
-    case undefined:
-    case true:
-    case false:
-      return;
-  }
-
-  if (Array.isArray(children)) {
-    children.forEach((child) => {
-      forEachSlot(child, callback); // Recursively handle nested arrays
-    });
-  } else {
-    callback(children);
-  }
-}
+import { forEachNode, shouldDiscard } from "./forEachNode";
+import {
+  OverrideConfig,
+  applyOverride,
+  applyOverrideToAll,
+  extractOverrideConfig,
+} from "./OverrideNode";
+import { HiddenArg } from "./HiddenArg";
+import { template } from "./template";
 
 function createSlotElement(
   wrapper: React.ElementType,
   key: React.Key | undefined,
-  children: React.ReactNode[],
+  children: React.ReactNode,
 ) {
-  return React.createElement(wrapper, key ? { key } : null, ...children);
+  return React.createElement(
+    wrapper,
+    key !== undefined ? { key } : null,
+    children,
+  );
 }
 
 function validateProps(props: {}) {
@@ -43,7 +35,9 @@ function validateProps(props: {}) {
   }
 
   if (props.hasOwnProperty("children")) {
-    throw new Error("slot cannot have `children` property");
+    throw new Error(
+      "slot cannot have `children` property. Specify the children for fallback separately",
+    );
   }
 
   if (props.hasOwnProperty("ref")) {
@@ -53,38 +47,30 @@ function validateProps(props: {}) {
 
 // function createTemplateElement
 
-/** Same as SlottableNode but without elements with `slot-name` property. */
-type Child =
-  | React.ReactElement
-  | React.ReactElement<TemplateComponent<any, any>, any>
-  | ((props: any) => React.ReactNode)
-  | string
-  | number
-  | boolean
-  | null
-  | undefined;
-
 export default class Children {
   private children = new Map<
     string,
     {
-      nodes: Child[];
-      hasFunction: boolean;
+      nodes: Exclude<React.ReactNode, Iterable<any>>[];
+      hasTemplate: boolean;
     }
   >();
 
-  private set(slotName: string, node: Child): void {
+  private set(
+    slotName: string,
+    node: Exclude<React.ReactNode, Iterable<any>>,
+  ): void {
     if (!this.children.has(slotName)) {
       this.children.set(slotName, {
         nodes: [],
-        hasFunction: false,
+        hasTemplate: false,
       });
     }
 
     const child = this.children.get(slotName)!;
 
-    if (typeof node === "function" || isTemplateElement(node)) {
-      child.hasFunction = true;
+    if (isTemplateElement(node)) {
+      child.hasTemplate = true;
     }
 
     child.nodes.push(node);
@@ -93,7 +79,7 @@ export default class Children {
   build(children: SlotChildren): void {
     this.children.clear();
 
-    forEachSlot(children, (child) => {
+    forEachNode(children, (child) => {
       const isValidElement = React.isValidElement(child);
 
       if (isValidElement && isTemplateComponent(child.type)) {
@@ -109,9 +95,16 @@ export default class Children {
 
         const newElement = React.createElement(child.type, newProps);
         this.set(child.props["slot-name"], newElement);
+      } else if (typeof child === "function") {
+        // (props) => <div />
+        this.set(
+          DEFAULT_SLOT_NAME,
+          // We need to wrap functions in template elements so that later React.Children.map can operate on it
+          <template.default>{child}</template.default>,
+        );
       } else {
-        // <div />, (props) => <div />, "foo", 42
-        this.set(DEFAULT_SLOT_NAME, child as Child);
+        // <div />, "foo", 42
+        this.set(DEFAULT_SLOT_NAME, child);
       }
       // true, false, null, undefined is removed by forEachSlot
     });
@@ -121,8 +114,11 @@ export default class Children {
     slotName: string,
     defaultContent: React.ReactNode,
     props: {},
+    previousOverrideConfig: OverrideConfig[],
+    previousDefaultContent: React.ReactNode,
     slotKey?: React.Key,
   ): React.ReactElement {
+    validateProps(props);
     // It's important that we don't remove the key that consumer provides on both
     // template components and slot components. In both cases the original elements are
     // removed from the tree but we insert (usually) a fragment there with the same key that
@@ -130,30 +126,44 @@ export default class Children {
 
     const Wrapper = React.Fragment;
 
+    let { config, children: _defaultContent } = extractOverrideConfig(
+      React.isValidElement(defaultContent) &&
+        // babel-plugin-transform-react-slots wraps children with a special element called default-content-wrapper
+        defaultContent.type === "default-content-wrapper"
+        ? defaultContent.props.children
+        : defaultContent,
+      previousOverrideConfig,
+      slotName,
+    );
+
     if (!this.has(slotName)) {
-      return createSlotElement(Wrapper, slotKey, [defaultContent]);
+      return createSlotElement(Wrapper, slotKey, [
+        shouldDiscard(_defaultContent)
+          ? previousDefaultContent
+          : _defaultContent,
+      ]);
     }
 
     const children = this.children.get(slotName)!;
 
-    if (!children.hasFunction) {
+    if (!children.hasTemplate) {
       return createSlotElement(
         Wrapper,
         slotKey,
-        children.nodes as React.ReactNode[],
+        applyOverrideToAll(
+          children.nodes,
+          config,
+          0,
+          slotName,
+          null,
+        ) as React.ReactNode[],
       );
     }
-
-    validateProps(props);
 
     return createSlotElement(
       Wrapper,
       slotKey,
-      children.nodes.map((node) => {
-        if (typeof node === "function") {
-          return node(props);
-        }
-
+      React.Children.map(children.nodes, (node) => {
         if (isTemplateElement(node)) {
           let {
             as: Component = DEFAULT_TEMPLATE_AS,
@@ -164,7 +174,7 @@ export default class Children {
           if ("ref" in node && node.ref !== null) {
             throw new Error(
               "Templates cannot have refs." + "as" in node.props
-                ? " If you are trying to get the reference of the element in `as` prop, move the element inside children."
+                ? " If you are trying to get a reference of the element in `as` prop, move the element inside children"
                 : "",
             );
           }
@@ -178,31 +188,42 @@ export default class Children {
           if (isSlotComponent(Component)) {
             if (typeof children === "function") {
               throw new Error(
-                "Template whose `as` prop is a slot can't have a function as a child",
+                "Template whose `as` prop is a slot cannot have a function as a child",
               );
             }
 
             // when a slot A is being rendered by another slot B, A overrides B
             // in both default content and props
+
             return Component(
-              children || defaultContent,
+              children,
               {
                 ...props,
                 ...componentProps,
               },
-              node.key || undefined,
+              undefined,
+              // @ts-expect-error Fourth and fifth arguments are not visible to consumers
+              new HiddenArg(config),
+              new HiddenArg(_defaultContent),
             );
           }
 
-          Object.assign(componentProps, node.key ? { key: node.key } : {});
-
-          return React.createElement(
+          const test = React.createElement(
             Component,
             componentProps,
-            typeof children === "function" ? children(props) : children,
+            applyOverrideToAll(
+              typeof children === "function" ? children(props) : children,
+              config,
+              0,
+              slotName,
+              logTemplateReturnedFunctionError,
+            ),
           );
+          return test;
         }
-        return node;
+        // If not a template element
+        const test = applyOverride(node, config, 0, slotName);
+        return test;
       }),
     );
   }
@@ -214,4 +235,10 @@ export default class Children {
   keys() {
     return this.children.keys();
   }
+}
+
+function logTemplateReturnedFunctionError() {
+  console.error(
+    "The '${slotName}' template attempted to render a function, which is not a valid React element. This will be excluded from the final result.",
+  );
 }

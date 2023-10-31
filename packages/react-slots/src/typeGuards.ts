@@ -48,6 +48,6 @@ export function isTemplateElement<N extends string, P extends {}>(
 /** Note: {"slot-name": undefined} also passes */
 export function isNamedSlot<N extends string>(
   element: React.ReactElement,
-): element is React.ReactElement<{ ["slot-name"]: N }> {
+): element is React.ReactElement<{ ["slot-name"]?: N }> {
   return element.props.hasOwnProperty("slot-name");
 }

@@ -9,21 +9,21 @@ import {
 import { CreateSlot, CreateTemplate, SlotComponent } from "../src/types";
 
 test("Slot Type", () => {
-  expectTypeOf<Slot>().toEqualTypeOf<["default", {}]>();
+  expectTypeOf<Slot>().toEqualTypeOf<{ value: ["default", {}] }>();
 
-  expectTypeOf<Slot<"foo">>().toEqualTypeOf<["foo", {}]>();
+  expectTypeOf<Slot<"foo">>().toEqualTypeOf<{ value: ["foo", {}] }>();
 
-  expectTypeOf<Slot<{ foo: boolean }>>().toEqualTypeOf<
-    ["default", { foo: boolean }]
-  >();
+  expectTypeOf<Slot<{ foo: boolean }>>().toEqualTypeOf<{
+    value: ["default", { foo: boolean }];
+  }>();
 
-  expectTypeOf<Slot<{ foo?: boolean }>>().toEqualTypeOf<
-    ["default", { foo?: boolean }]
-  >();
+  expectTypeOf<Slot<{ foo?: boolean }>>().toEqualTypeOf<{
+    value: ["default", { foo?: boolean }];
+  }>();
 
-  expectTypeOf<Slot<"foo", { foo: boolean }>>().toEqualTypeOf<
-    ["foo", { foo: boolean }]
-  >();
+  expectTypeOf<Slot<"foo", { foo: boolean }>>().toEqualTypeOf<{
+    value: ["foo", { foo: boolean }];
+  }>();
 
   // undefined as the first argument should be the same as omitting the TName
   expectTypeOf<Slot<undefined>>().toEqualTypeOf<Slot>();
@@ -32,20 +32,21 @@ test("Slot Type", () => {
   >();
 
   // TProps can be any
-  expectTypeOf<Slot<"foo", any>>().toEqualTypeOf<["foo", any]>();
-  expectTypeOf<Slot<string, any>>().toEqualTypeOf<[string, any]>();
+  expectTypeOf<Slot<"foo", any>>().toEqualTypeOf<{ value: ["foo", any] }>();
+  expectTypeOf<Slot<string, any>>().toEqualTypeOf<{ value: [string, any] }>();
 
   // any in the first argument should transform to string
-  expectTypeOf<Slot<any>>().toEqualTypeOf<[string, {}]>();
-  expectTypeOf<Slot<any, any>>().toEqualTypeOf<[string, any]>();
+  expectTypeOf<Slot<any>>().toEqualTypeOf<{ value: [string, {}] }>();
+  expectTypeOf<Slot<any, any>>().toEqualTypeOf<{ value: [string, any] }>();
 
   // Distributivity should work on both TName and TProps
   expectTypeOf<
     Slot<"foo" | "bar", { foo: string } | { bar: string }>
-  >().toEqualTypeOf<
-    | ["foo", { foo: string } | { bar: string }]
-    | ["bar", { foo: string } | { bar: string }]
-  >();
+  >().toEqualTypeOf<{
+    value:
+      | ["foo", { foo: string } | { bar: string }]
+      | ["bar", { foo: string } | { bar: string }];
+  }>();
 
   // Disallowed props should be omitted
   expectTypeOf<
@@ -431,5 +432,3 @@ test("Slot", () => {
   // No error. Accepts children
   <slotTest.default>children</slotTest.default>;
 });
-
-// TODO: update types/react

@@ -5,6 +5,7 @@ import { afterEach } from "vitest";
 import {
   template,
   useSlot,
+  OverrideNode,
   type CreateTemplate,
   type Slot,
   type SlotChildren,
@@ -389,10 +390,10 @@ describe("Template component", () => {
       const { slot } = useSlot(children);
 
       const defaultElement = slot.default();
-      expect(defaultElement?.props.children.key).toBe("1");
+      expect(defaultElement?.props.children[0].key).toBe(".$1");
 
       const namedElement = slot.named();
-      expect(namedElement?.props.children.key).toBe("2");
+      expect(namedElement?.props.children[0].key).toBe(".$2");
 
       return defaultElement;
     }
@@ -692,9 +693,10 @@ describe("Template as slot function", () => {
       const { slot } = useSlot(children);
 
       const element = slot.default(null, null, 1);
+
       expect(element?.key).toBe("1");
-      expect(element?.props.children.key).toBe("2");
-      expect(element?.props.children.props.children.key).toBe("3");
+      expect(element?.props.children[0].key).toBe(".$2");
+      expect(element?.props.children[0].props.children[0].key).toBe(".$3");
       return element;
     }
 
@@ -712,5 +714,895 @@ describe("Template as slot function", () => {
         <template.default key={3} />
       </KeyTest>,
     );
+  });
+});
+
+describe("OverrideNode", () => {
+  test("is ignored when it has no props", () => {
+    function Parent({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <div>
+          <Child>
+            <template.name as={slot.default}>
+              <OverrideNode />
+            </template.name>
+          </Child>
+        </div>
+      );
+    }
+
+    function Child({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <div>{slot.name(<OverrideNode>fallback content</OverrideNode>)}</div>
+      );
+    }
+
+    const { asFragment: asFragment1 } = render(
+      <Child>
+        <div slot-name="name" />
+      </Child>,
+    );
+
+    const { asFragment: asFragment2 } = render(<Child></Child>);
+
+    const { asFragment: asFragment3 } = render(<Parent>content</Parent>);
+
+    const { asFragment: asFragment4 } = render(<Parent></Parent>);
+
+    expect(asFragment1()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          <div />
+        </div>
+      </DocumentFragment>
+    `);
+
+    expect(asFragment2()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          fallback content
+        </div>
+      </DocumentFragment>
+    `);
+
+    expect(asFragment3()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          <div>
+            content
+          </div>
+        </div>
+      </DocumentFragment>
+    `);
+
+    expect(asFragment4()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          <div>
+            fallback content
+          </div>
+        </div>
+      </DocumentFragment>
+    `);
+  });
+
+  test("enforces node type", () => {
+    {
+      function Child({ children }: any) {
+        const { slot } = useSlot(children);
+
+        return (
+          <div>
+            {slot.name(
+              <OverrideNode allowedNodes={["button"]}>
+                <span />
+              </OverrideNode>,
+            )}
+          </div>
+        );
+      }
+
+      expect(() => render(<Child></Child>)).toThrow();
+      expect(() =>
+        render(
+          <Child>
+            <button slot-name="name"></button>
+          </Child>,
+        ),
+      ).not.toThrow();
+      expect(() => render(<Child slot-name="name">string</Child>)).toThrow();
+    }
+
+    {
+      function Child({ children }: any) {
+        const { slot } = useSlot(children);
+
+        return (
+          <div>
+            {slot.default(
+              <OverrideNode allowedNodes={[String, Number]} enforce="remove">
+                fallback content
+              </OverrideNode>,
+            )}
+          </div>
+        );
+      }
+      const { asFragment } = render(
+        <Child>
+          <button>removed</button> This is kept <span>removed</span> {42} {true}
+        </Child>,
+      );
+
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <div>
+             This is kept  42 
+          </div>
+        </DocumentFragment>
+      `);
+    }
+
+    {
+      function Child({ children }: any) {
+        const { slot } = useSlot(children);
+
+        return (
+          <div>
+            {slot.default(
+              <OverrideNode allowedNodes={[String, Number]} enforce="ignore">
+                <div />
+              </OverrideNode>,
+            )}
+          </div>
+        );
+      }
+      const { asFragment } = render(
+        <Child>
+          <span />
+        </Child>,
+      );
+
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <div>
+            <span />
+          </div>
+        </DocumentFragment>
+      `);
+
+      const { asFragment: asFragment2 } = render(<Child></Child>);
+
+      expect(asFragment2()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <div>
+            <div />
+          </div>
+        </DocumentFragment>
+      `);
+    }
+  });
+
+  test("overrides node when the node prop is specified, and content matches allowedNodes", () => {
+    function Child({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <>
+          {slot.default(
+            <OverrideNode
+              enforce="ignore"
+              allowedNodes={["button", String]}
+              node={(node) => {
+                return <div>{node}</div>;
+              }}
+            />,
+          )}
+        </>
+      );
+    }
+
+    const { asFragment } = render(
+      <Child>
+        <template.default>
+          <button />
+        </template.default>
+        foo
+        <span>ignored</span>
+        {42}
+      </Child>,
+    );
+
+    expect(asFragment()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          <button />
+        </div>
+        <div>
+          foo
+        </div>
+        <span>
+          ignored
+        </span>
+        42
+      </DocumentFragment>
+    `);
+  });
+
+  test("overrides all nodes when the node prop is specified and allowedNodes is not", () => {
+    function Child({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <>
+          {slot.default(
+            <OverrideNode
+              enforce="ignore"
+              node={(node) => {
+                return <div>{node}</div>;
+              }}
+            />,
+          )}
+        </>
+      );
+    }
+
+    const { asFragment } = render(
+      <Child>
+        <template.default>
+          <button />
+        </template.default>
+        foo
+        <span>included</span>
+        {42}
+      </Child>,
+    );
+
+    expect(asFragment()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          <button />
+        </div>
+        <div>
+          foo
+        </div>
+        <div>
+          <span>
+            included
+          </span>
+        </div>
+        <div>
+          42
+        </div>
+      </DocumentFragment>
+    `);
+  });
+
+  test("node function is called only for nodes that get rendered", () => {
+    function Child({ children, nodeFn }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <>
+          {slot.default(
+            <OverrideNode node={nodeFn}>Fallback content</OverrideNode>,
+          )}
+        </>
+      );
+    }
+
+    function Parent({ children, childNodeFn, nodeFn }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <Child nodeFn={childNodeFn}>
+          <template.default as={slot.default}>
+            <OverrideNode node={nodeFn}>Fallback content 2</OverrideNode>
+            Fallback content 3
+          </template.default>
+        </Child>
+      );
+    }
+
+    render(
+      <Child
+        nodeFn={(node: React.ReactNode) => {
+          expect(node).toBe("Fallback content");
+        }}
+      ></Child>,
+    );
+
+    render(
+      <Child
+        nodeFn={(node: React.ReactNode) => {
+          expect(node).toBe("Content");
+        }}
+      >
+        Content
+      </Child>,
+    );
+
+    let callCount = 0;
+    render(
+      <Parent
+        nodeFn={(node: any) => {
+          expect(node).toBe("Fallback content 2");
+          return <span>{node}</span>;
+        }}
+        childNodeFn={(node: any) => {
+          let expectedContent = [
+            <span>Fallback content 2</span>,
+            "Fallback content 3",
+          ];
+          expect(node).toEqual(expectedContent[callCount++]);
+          return node;
+        }}
+      ></Parent>,
+    );
+  });
+
+  test("overrides props for elements specified by allowedNodes, ignores primitives", () => {
+    function Child({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <>
+          {slot.default(
+            <OverrideNode
+              allowedNodes={[String, Number, "span"]}
+              enforce="ignore"
+              props={{
+                className: OverrideNode.stringAppend("appended"),
+                id: OverrideNode.stringPrepend("prepended"),
+              }}
+            >
+              <span className="base">Fallback</span>
+            </OverrideNode>,
+          )}
+        </>
+      );
+    }
+
+    {
+      const { asFragment } = render(<Child></Child>);
+
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <span
+            class="base appended"
+            id="prepended"
+          >
+            Fallback
+          </span>
+        </DocumentFragment>
+      `);
+    }
+
+    {
+      const { asFragment } = render(
+        <Child>
+          <div>content</div>
+        </Child>,
+      );
+
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <div>
+            content
+          </div>
+        </DocumentFragment>
+      `);
+    }
+  });
+
+  test("prop functions are only called for nodes that get rendered", () => {
+    function Child({ children, propsOverride }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <>
+          {slot.default(
+            <OverrideNode props={propsOverride}>
+              <span className="fallback-1">Fallback 1</span>
+            </OverrideNode>,
+          )}
+        </>
+      );
+    }
+
+    function Parent({ children, childPropsOverride, propsOverride }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <Child propsOverride={childPropsOverride}>
+          <template.default as={slot.default}>
+            <OverrideNode props={propsOverride}>
+              <div>Fallback 2</div>
+            </OverrideNode>
+            <section>Fallback 3</section>
+          </template.default>
+        </Child>
+      );
+    }
+
+    render(
+      <Child
+        propsOverride={(props: any) => {
+          expect(props).toEqual({
+            className: "fallback-1",
+            children: "Fallback 1",
+          });
+        }}
+      ></Child>,
+    );
+
+    render(
+      <Child
+        propsOverride={(props: any) => {
+          expect(props).toEqual({
+            id: "test-id",
+          });
+        }}
+      >
+        <div id="test-id"></div>
+      </Child>,
+    );
+
+    {
+      let callCount = 0;
+      render(
+        <Parent
+          propsOverride={(props: any) => {
+            expect(props).toEqual({ children: "Fallback 2" });
+            return { className: "added-class" };
+          }}
+          childPropsOverride={(props: any) => {
+            let expectedProps = [
+              { className: "added-class", children: "Fallback 2" },
+              { children: "Fallback 3" },
+            ];
+            expect(props).toEqual(expectedProps[callCount++]);
+          }}
+        ></Parent>,
+      );
+    }
+
+    {
+      let callCount = 0;
+      render(
+        <Parent
+          propsOverride={(props: any) => {
+            expect(props).toEqual({ children: "Fallback 2" });
+            return { className: "added-class" };
+          }}
+          childPropsOverride={(props: any) => {
+            let expectedProps = [
+              { className: "added-class", children: "Fallback 2" },
+              { children: "Fallback 3" },
+            ];
+            expect(props).toEqual(expectedProps[callCount++]);
+          }}
+        ></Parent>,
+      );
+    }
+
+    {
+      render(
+        <Parent
+          propsOverride={(props: any) => {
+            expect(props).toEqual({ children: "Content" });
+            return { className: "added-class" };
+          }}
+          childPropsOverride={(props: any) => {
+            let expectedProps = {
+              className: "added-class",
+              children: "Content",
+            };
+
+            expect(props).toEqual(expectedProps);
+          }}
+        >
+          <div>Content</div>
+        </Parent>,
+      );
+    }
+  });
+
+  test("prop function's return value is merged to the rest of the props", () => {
+    function Child({ children, propsOverride }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <>
+          {slot.default(
+            <OverrideNode props={propsOverride}>
+              <span className="fallback-1">Fallback 1</span>
+            </OverrideNode>,
+          )}
+        </>
+      );
+    }
+
+    const { asFragment } = render(
+      <Child propsOverride={() => ({ id: "added-id" })} />,
+    );
+
+    expect(asFragment()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <span
+          class="fallback-1"
+          id="added-id"
+        >
+          Fallback 1
+        </span>
+      </DocumentFragment>
+    `);
+  });
+
+  test("can be chained", () => {
+    function Child({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return slot.default([
+        <OverrideNode
+          node={(node) => {
+            if (React.isValidElement(node)) {
+              return React.createElement("span", node.props);
+            }
+            return node;
+          }}
+        ></OverrideNode>,
+        <OverrideNode
+          props={{ className: OverrideNode.stringAppend("child-added") }}
+        ></OverrideNode>,
+      ]);
+    }
+
+    function Parent({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return (
+        <Child>
+          <template.default as={slot.default}>
+            <OverrideNode node={(node) => <div>{node}</div>}>
+              Parent's default content
+            </OverrideNode>
+            <OverrideNode props={() => ({ id: "parent-added" })}></OverrideNode>
+          </template.default>
+        </Child>
+      );
+    }
+
+    {
+      const { asFragment } = render(
+        <Child>
+          <div>content</div>
+        </Child>,
+      );
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <span
+            class="child-added"
+          >
+            content
+          </span>
+        </DocumentFragment>
+      `);
+    }
+
+    {
+      const { asFragment } = render(<Parent></Parent>);
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <span
+            class="child-added"
+          >
+            Parent's default content
+          </span>
+        </DocumentFragment>
+      `);
+    }
+
+    {
+      const { asFragment } = render(<Parent>Content</Parent>);
+      expect(asFragment()).toMatchInlineSnapshot(`
+        <DocumentFragment>
+          <span
+            class="child-added"
+            id="parent-added"
+          >
+            Content
+          </span>
+        </DocumentFragment>
+      `);
+    }
+  });
+
+  test("maintains key equality of fallback content when reordered", () => {
+    function Child({ children, defaultContent }: any) {
+      const { slot } = useSlot(children);
+
+      return slot.default(defaultContent);
+    }
+
+    const { asFragment, rerender, getByText } = render(
+      <Child
+        defaultContent={[
+          <OverrideNode
+            key={1}
+            allowedNodes={["div"]}
+            node={(node) => {
+              return [
+                <div id={node.props.id + "-override-1"}>
+                  {node.props.children} override 1
+                </div>,
+                <div id={node.props.id + "-override-2"}>
+                  {node.props.children} override 2
+                </div>,
+              ];
+            }}
+          >
+            {[
+              { id: "fallback-1", content: "Fallback 1" },
+              { id: "fallback-2", content: "Fallback 2" },
+            ].map(({ id, content }) => (
+              <div id={id} key={id}>
+                {content}
+              </div>
+            ))}
+          </OverrideNode>,
+          <OverrideNode key={2} props={{ className: () => "added-class" }}>
+            {[
+              { id: "fallback-3", content: "Fallback 3" },
+              { id: "fallback-4", content: "Fallback 4" },
+            ].map(({ id, content }) => (
+              <div id={id} key={id}>
+                {content}
+              </div>
+            ))}
+          </OverrideNode>,
+          <OverrideNode key={3}>
+            <div>Fallback 5</div>
+          </OverrideNode>,
+        ]}
+      ></Child>,
+    );
+
+    expect(asFragment()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div
+          id="fallback-1-override-1"
+        >
+          Fallback 1 override 1
+        </div>
+        <div
+          id="fallback-1-override-2"
+        >
+          Fallback 1 override 2
+        </div>
+        <div
+          id="fallback-2-override-1"
+        >
+          Fallback 2 override 1
+        </div>
+        <div
+          id="fallback-2-override-2"
+        >
+          Fallback 2 override 2
+        </div>
+        <div
+          class="added-class"
+          id="fallback-3"
+        >
+          Fallback 3
+        </div>
+        <div
+          class="added-class"
+          id="fallback-4"
+        >
+          Fallback 4
+        </div>
+        <div>
+          Fallback 5
+        </div>
+      </DocumentFragment>
+    `);
+
+    let oneOne = getByText("Fallback 1 override 1");
+    let oneTwo = getByText("Fallback 1 override 2");
+    let twoOne = getByText("Fallback 2 override 1");
+    let twoTwo = getByText("Fallback 2 override 2");
+    let three = getByText("Fallback 3");
+    let four = getByText("Fallback 4");
+    let five = getByText("Fallback 5");
+
+    rerender(
+      // OverrideNode's swapped; objects to map swapped; Third Override's key changed
+      <Child
+        defaultContent={[
+          <OverrideNode key={2} props={{ className: () => "added-class" }}>
+            {[
+              { id: "fallback-4", content: "Fallback 4" },
+              { id: "fallback-3", content: "Fallback 3" },
+            ].map(({ id, content }) => (
+              <div id={id} key={id}>
+                {content}
+              </div>
+            ))}
+          </OverrideNode>,
+          <OverrideNode
+            key={1}
+            allowedNodes={["div"]}
+            node={(node) => {
+              return [
+                <div id={node.props.id + "-override-1"}>
+                  {node.props.children} override 1
+                </div>,
+                <div id={node.props.id + "-override-2"}>
+                  {node.props.children} override 2
+                </div>,
+              ];
+            }}
+          >
+            {[
+              { id: "fallback-2", content: "Fallback 2" },
+              { id: "fallback-1", content: "Fallback 1" },
+            ].map(({ id, content }) => (
+              <div id={id} key={id}>
+                {content}
+              </div>
+            ))}
+          </OverrideNode>,
+          <OverrideNode key="different-key">
+            <div>Fallback 5</div>
+          </OverrideNode>,
+        ]}
+      ></Child>,
+    );
+
+    expect(oneOne).toBe(getByText("Fallback 1 override 1"));
+    expect(oneTwo).toBe(getByText("Fallback 1 override 2"));
+    expect(twoOne).toBe(getByText("Fallback 2 override 1"));
+    expect(twoTwo).toBe(getByText("Fallback 2 override 2"));
+    expect(three).toBe(getByText("Fallback 3"));
+    expect(four).toBe(getByText("Fallback 4"));
+    expect(five).not.toBe(getByText("Fallback 5"));
+  });
+
+  test("maintains key equality of provided content when reordered", () => {
+    function Child({
+      children,
+      defaultFallback,
+      fooFallback,
+      isReversed,
+    }: any) {
+      const { slot } = useSlot(children);
+
+      return isReversed
+        ? [
+            slot.foo(fooFallback, null, 2),
+            slot.default(defaultFallback, null, 1),
+          ]
+        : [
+            slot.default(defaultFallback, null, 1),
+            slot.foo(fooFallback, null, 2),
+          ];
+    }
+
+    const { asFragment, getByText, rerender } = render(
+      <Child
+        defaultFallback={
+          <OverrideNode
+            allowedNodes={["span"]}
+            node={(node) => [
+              <div key="override-1">{node.props.children} override 1</div>,
+              <div key="override-2">{node.props.children} override 2</div>,
+            ]}
+          />
+        }
+        fooFallback={
+          <OverrideNode
+            allowedNodes={["span"]}
+            props={{ className: () => "added-class" }}
+          />
+        }
+      >
+        <span key={"default-1"}>Default 1</span>
+        <span key={"default-2"}>Default 2</span>
+        <span key={"foo-1"} slot-name="foo">
+          Foo 1
+        </span>
+        <template.foo key="foo-2">
+          <span key="foo-2-1">Foo 2.1</span>
+          <span key="foo-2-2">Foo 2.2</span>
+        </template.foo>
+      </Child>,
+    );
+
+    expect(asFragment()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          Default 1 override 1
+        </div>
+        <div>
+          Default 1 override 2
+        </div>
+        <div>
+          Default 2 override 1
+        </div>
+        <div>
+          Default 2 override 2
+        </div>
+        <span
+          class="added-class"
+        >
+          Foo 1
+        </span>
+        <span
+          class="added-class"
+        >
+          Foo 2.1
+        </span>
+        <span
+          class="added-class"
+        >
+          Foo 2.2
+        </span>
+      </DocumentFragment>
+    `);
+
+    const default1_1 = getByText("Default 1 override 1");
+    const default1_2 = getByText("Default 1 override 2");
+    const default2_1 = getByText("Default 2 override 1");
+    const default2_2 = getByText("Default 2 override 2");
+    const foo1 = getByText("Foo 1");
+    const foo2_1 = getByText("Foo 2.1");
+    const foo2_2 = getByText("Foo 2.2");
+
+    rerender(
+      // Swapped the slot placements;
+      // Swapped array items in node override;
+      // Swapped content;
+      // swapped children of template.foo
+      <Child
+        isReversed
+        defaultFallback={
+          <OverrideNode
+            allowedNodes={["span"]}
+            node={(node) => [
+              <div key="override-2">{node.props.children} override 2</div>,
+              <div key="override-1">{node.props.children} override 1</div>,
+            ]}
+          />
+        }
+        fooFallback={
+          <OverrideNode
+            allowedNodes={["span"]}
+            props={{ className: () => "added-class" }}
+          />
+        }
+      >
+        <template.foo key="foo-2">
+          <span key="foo-2-2">Foo 2.2</span>
+          <span key="foo-2-1">Foo 2.1</span>
+        </template.foo>
+        <span key={"foo-1"} slot-name="foo">
+          Foo 1
+        </span>
+        <span key={"default-2"}>Default 2</span>
+        <span key={"default-1"}>Default 1</span>
+      </Child>,
+    );
+
+    expect(default1_1).toBe(getByText("Default 1 override 1"));
+    expect(default1_2).toBe(getByText("Default 1 override 2"));
+    expect(default2_1).toBe(getByText("Default 2 override 1"));
+    expect(default2_2).toBe(getByText("Default 2 override 2"));
+    expect(foo1).toBe(getByText("Foo 1"));
+    expect(foo2_1).toBe(getByText("Foo 2.1"));
+    expect(foo2_2).toBe(getByText("Foo 2.2"));
   });
 });

@@ -36,13 +36,12 @@ type MergeTPropsAndTAsProps<
     : TAsProps,
 > = {
   [K in keyof _TAsProps]: K extends "children"
-    ? // Allow "as element" to have whatever it wants as a child.
-      // Function as a child is reserved for props passed by <Slot> component,
-      // so if "as element" also expects a function as a child, two functions must be provided, the first one
-      // for the template and the second for the "as element".
-      // eg: (props: TemplateProps) => (props: AsElementChildFunctionProps) => ReactElement
-      | ((props: TProps) => _TAsProps[K])
-        | Exclude<_TAsProps[K], (arg: any) => any>
+    ? // Only allow children of the as element to be ReactNode.
+      // This is done because slots change the children before passing it to
+      // the initialized as element.
+      _TAsProps[K] extends React.ReactNode
+      ? _TAsProps[K] | ((props: TProps) => _TAsProps[K])
+      : never
     : _TAsProps[K];
 };
 
@@ -54,7 +53,7 @@ type TemplateProps<
   ? // When we have:
     // <otherCompTemplate.default as={thisCompSlot.default}/>
     // This makes sure that props that child (otherComponent) specified is optional (can be overridden)
-    // but the extra props that's specified in parent component's (thisComp) slot type is required to provide
+    // but the extra props that's specified in parent component's slot type is required to provide
     {
       children?: React.ReactNode;
     } & Partial<TProps> &
@@ -79,7 +78,7 @@ export type TemplateComponent<TName extends string, TProps extends object> = {
       TAs extends SlotComponent<any> ? TProps : any,
     ]
       ? TemplateProps<TProps, TAs, UnwrapProps<TAs>>
-      : "Props of `SlotComponent<:Props:>` must extend Props of `TemplateComponent<:Name:, :Props:>` when used for `as` prop",
+      : "Custom error: Props of `SlotComponent<:Props:>` must extend props of `TemplateComponent<:Name:, :Props:>` when used for `as` prop",
   ): React.ReactElement | null;
   [SLOT_NAME]: TName;
   [COMPONENT_TYPE]: typeof TEMPLATE_TYPE_IDENTIFIER;
@@ -150,20 +149,22 @@ type DistributiveKeyOf<T extends {}> = T extends unknown ? keyof T : never;
 export type Slot<
   TName extends string | undefined | object = undefined,
   TProps extends object = {},
-> = 0 extends TName & 1
-  ? SlotTuple<string, TProps>
-  : TName extends object
-  ? SlotTuple<DefaultSlotName, OmitDisallowedProps<TName>>
-  : SlotTuple<
-      TName extends undefined ? DefaultSlotName : Exclude<TName, object>,
-      0 extends TProps & 1
-        ? any // only true when TProps is any. Important for providing Base type to extend from
-        : DistributiveKeyOf<OmitDisallowedProps<TProps>> extends never
-        ? {} // When an empty object (or object with disallowed keys) are passed, change the type to `{}` because it looks clearer on hover
-        : TProps extends unknown
-        ? OmitDisallowedProps<TProps>
-        : never
-    >;
+> = {
+  value: 0 extends TName & 1
+    ? SlotTuple<string, TProps>
+    : TName extends object
+    ? SlotTuple<DefaultSlotName, OmitDisallowedProps<TName>>
+    : SlotTuple<
+        TName extends undefined ? DefaultSlotName : Exclude<TName, object>,
+        0 extends TProps & 1
+          ? any // only true when TProps is any. Important for providing Base type to extend from
+          : DistributiveKeyOf<OmitDisallowedProps<TProps>> extends never
+          ? {} // When an empty object (or object with disallowed keys) are passed, change the type to `{}` because it looks clearer on hover
+          : TProps extends unknown
+          ? OmitDisallowedProps<TProps>
+          : never
+      >;
+};
 
 type MergeDuplicateSlots<
   U extends SlotTuple<string, any>,
@@ -173,6 +174,8 @@ type MergeDuplicateSlots<
 // Moving recursion outside helps display SlotChildren<...> consistently as SlottableNode<..., ...> on hover.
 // Sometimes this shows up in the type declaration on hover, hence why the ambiguous name
 type Children<T extends SlottableNode<string, any>> = T | Children<T>[]; // Something breaks if Iterable is used instead of an array
+
+type UnwrapValue<T extends Slot<string, any>> = T["value"];
 
 type AnyCase<TSlot> = 0 extends TSlot & 1 ? Slot<string, any> : TSlot;
 
@@ -186,8 +189,10 @@ type AnyCase<TSlot> = 0 extends TSlot & 1 ? Slot<string, any> : TSlot;
  * ```
  */
 export type SlotChildren<TSlot extends Slot<string, any> = Slot<string, any>> =
-  | SlotTupleToSlottableNode<MergeDuplicateSlots<AnyCase<TSlot>>>
-  | Children<SlotTupleToSlottableNode<MergeDuplicateSlots<AnyCase<TSlot>>>>;
+  | SlotTupleToSlottableNode<MergeDuplicateSlots<UnwrapValue<AnyCase<TSlot>>>>
+  | Children<
+      SlotTupleToSlottableNode<MergeDuplicateSlots<UnwrapValue<AnyCase<TSlot>>>>
+    >;
 
 /**
  * @example
@@ -206,12 +211,6 @@ type GetTemplateUnions<U> = U extends TemplateAsSlotComponentLikeElement<
   : never;
 /**
  * Create type-safe template
- * @example
- * ```ts
- * const MyComponentTemplate = Template as CreateTemplate<
- * 	Slots<Slot | Slot<"name", { foo: string }>>
- * >;
- * ```
  */
 export type CreateTemplate<T extends SlotChildren> = {} & Any.Compute<
   UnionToIntersection<
@@ -277,58 +276,4 @@ export type HasSlot<T extends SlotChildren> = Any.Compute<{
   >["props"]["slot-name"]]: true | undefined;
 }>;
 
-// export type HasSlot<T extends Slots> = T extends TemplateAsSlotComponentLikeElement<<
-
-// function test13() {
-// 	return null;
-// }
-// test13[SLOT_NAME] = "test" as const;
-
-// let test12: TemplateComponent<"test", { test2: boolean }> = test13;
-
-// let test14: Slots<Slot<"test", { test2: boolean }>> = React.createElement(
-// 	({ "slot-name": slotName }) => null,
-// 	{ "slot-name": "test" }
-// ) as Slots<Slot<"test", { test2: boolean }>>;
-// let test15: Slots<Slot<"test">> = React.createElement(test12) as Slots<
-// 	Slot<"test">
-// >;
-
-// let test16: Slots<Slot<"undefined">> = React.createElement("div", {
-// 	"slot-name": "undefined" as const,
-// 	foo: "bar",
-// });
-
-// let test17: Slots<Slot<{ test: boolean }>> = React.createElement("div", {
-// 	"slot-name": undefined,
-// });
-
-// type z = Slot<"name"> extends Slot<"name", { test: true }> ? "t" : "f";
-
-// let t: CreateTemplate<e>;
-
-// type e = Slots<Slot<"namee"> | Slot<"name", { not: true }> | Slot<"beka">>;
-// type g = CreateTemplate<e>["name"];
-// type f = Slots;
-
-// type Test2 = Slot<"name"> extends Slot ? "true" : "false";
-// type Test3 = Slot extends Slot<"name"> ? "true" : "false";
-// type Test4 = Slot<undefined> extends Slot<undefined, { test: boolean }>
-// 	? "true"
-// 	: "false";
-// type Test5 = Slot<undefined, { test: boolean }> extends Slot<undefined>
-// 	? "true"
-// 	: "false";
-// type Test6 = Slot<"", { test: boolean }> extends Slot<undefined>
-// 	? "true"
-// 	: "false";
-// type Test7 = Slot extends Slot<{ test: boolean }> ? "true" : "false";
-// type Test8 = Slot<{ test: boolean }> extends Slot ? "true" : "false";
-
-// type X = TemplateProps<{ test: true }>;
-
-// let asdads: Slots<Slot<"chil"> | Slot<"na", { a: 1 }>>;
-
-// type asdasdada = Slots<Slot<"name"> | Slot<"not", { yellow: true }>>;
-
-// type asd2 = ___Slot<"not", { yellow: true }> extends ___Slot<"not", {yellow: false}> ? 1 : 0;
+// -------------------- //

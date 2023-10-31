@@ -33,7 +33,7 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "release": "pnpm run build && changeset publish",
     "test": "vitest run --globals --environment jsdom",
-    "test:watch": "vitest",
+    "test:watch": "vitest --globals --environment jsdom",
     "typecheck": "vitest typecheck --watch=false"
   },
   "peerDependencies": {

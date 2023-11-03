@@ -8,7 +8,7 @@ import * as React from "react";
 export function useStateControl<T>(
   value: T | undefined,
   defaultValue: T | undefined,
-  onChange: ((v: T) => void) | undefined,
+  onChange: ((v: T, ...args: unknown[]) => void) | undefined,
 ): [T | undefined, (nextValue: T) => void] {
   const isControlled = value !== undefined;
 

@@ -173,7 +173,9 @@ type MergeDuplicateSlots<
 
 // Moving recursion outside helps display SlotChildren<...> consistently as SlottableNode<..., ...> on hover.
 // Sometimes this shows up in the type declaration on hover, hence why the ambiguous name
-type Children<T extends SlottableNode<string, any>> = T | Children<T>[]; // Something breaks if Iterable is used instead of an array
+// FIXME: Something used to break if Iterable was used instead of an array but can't remember what, although
+// using iterable makes it so that ReactNode is assignable to SlotChildren<Slot>
+type Children<T extends SlottableNode<string, any>> = T | Iterable<Children<T>>;
 
 type UnwrapValue<T extends Slot<string, any>> = T["value"];
 

@@ -24,6 +24,10 @@ p {
   padding: 1rem;
 }
 
+.demos > * {
+  margin-bottom: 1rem;
+}
+
 .ReactModal__Content {
   position: unset !important;
   inset: unset !important;
@@ -68,8 +72,31 @@ p {
   border-radius: 1.25rem;
   border: 0;
   box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2);
-  font-weight: bold;
   text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.125s ease-in-out;
+}
+
+.button__left {
+  width: 1.5rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateX(-0.5rem);
+  font-size: 1.5rem;
+}
+
+.button__right {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateX(0.5rem);
+  font-size: 1.2rem;
 }
 
 .button--primary {
@@ -88,5 +115,56 @@ p {
   &:hover {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 35rem;
+}
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.accordion__summary {
+  display: flex;
+  justify-content: space-between;
+  box-shadow: none;
+  border-radius: 1rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  font-weight: bold;
+}
+
+.accordion__icon {
+  transform: rotate(0);
+  transition: transform 0.12s ease-in-out;
+}
+
+.accordion__details {
+  padding: 1rem;
+  border-radius: 1.5rem;
+  display: none;
+}
+
+.accordion--open {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: black;
+  border-radius: 1rem;
+
+  & .accordion__summary {
+    color: skyblue;
+  }
+
+  & .accordion__icon {
+    transform: rotate(-90deg);
+  }
+
+  & .accordion__details {
+    color: white;
+    display: block;
   }
 }

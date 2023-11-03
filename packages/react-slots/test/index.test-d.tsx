@@ -77,7 +77,7 @@ test("SlotChildren", () => {
 
   type Func<T> = [T] extends [unknown] ? (props: T) => React.ReactNode : never;
 
-  type TypeOrArray<T> = T | TypeOrArray<T>[];
+  type TypeOrIterable<T> = T | Iterable<TypeOrIterable<T>>;
 
   type TemplateComponentLikeElement<
     TName extends string,
@@ -111,7 +111,7 @@ test("SlotChildren", () => {
 
   // SlotChildren with any should have sensible defaults
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | Literals
       | Func<any>
       | TemplateComponentLikeElement<string, any>
@@ -120,14 +120,14 @@ test("SlotChildren", () => {
     >
   >().toEqualTypeOf<SlotChildren<any>>();
   expectTypeOf<
-    TypeOrArray<React.ReactElement<{ noSlotName: any }>>
+    TypeOrIterable<React.ReactElement<{ noSlotName: any }>>
   >().not.toMatchTypeOf<SlotChildren<any>>();
 
   // SlotChildren without type arguments should be the same as SlotChildren<any>
   expectTypeOf<SlotChildren<any>>().toEqualTypeOf<SlotChildren>();
 
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | Literals
       | Func<any>
       | TemplateComponentLikeElement<string, any>
@@ -137,7 +137,7 @@ test("SlotChildren", () => {
   >().toEqualTypeOf<SlotChildren<Slot<string, any>>>();
 
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | Literals
       | Func<{}>
       | TemplateComponentLikeElement<"default", {}>
@@ -147,7 +147,7 @@ test("SlotChildren", () => {
   >().toEqualTypeOf<SlotChildren<Slot>>();
 
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | Literals
       | Func<{ foo: string }>
       | TemplateComponentLikeElement<"default", { foo: string }>
@@ -157,7 +157,7 @@ test("SlotChildren", () => {
   >().toEqualTypeOf<SlotChildren<Slot<{ foo: string }>>>();
 
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | TemplateComponentLikeElement<"name", { foo: string }>
       | TemplateAsSlotComponentLikeElement<"name", { foo: string }>
       | React.ReactElement<{ "slot-name": "name" }>
@@ -166,7 +166,7 @@ test("SlotChildren", () => {
 
   // Distributivity test
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | TemplateComponentLikeElement<"name", { foo: string }>
       | TemplateAsSlotComponentLikeElement<"name", { foo: string }>
       | React.ReactElement<{ "slot-name": "name" }>
@@ -187,7 +187,7 @@ test("SlotChildren", () => {
 
   // Distributivity through Slot test
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | TemplateComponentLikeElement<"name", { bar: string } | { foo: string }>
       | TemplateAsSlotComponentLikeElement<
           "name",
@@ -212,7 +212,7 @@ test("SlotChildren", () => {
 
   // Should merge duplicate names
   expectTypeOf<
-    TypeOrArray<
+    TypeOrIterable<
       | TemplateComponentLikeElement<
           "name",
           { foo: string } | { bar: string } | { baz: string }
@@ -230,6 +230,9 @@ test("SlotChildren", () => {
       | Slot<"name", { baz: string }>
     >
   >();
+
+  // ReactNode extends children with default slot
+  expectTypeOf<React.ReactNode>().toMatchTypeOf<SlotChildren<Slot>>();
 });
 
 test("Template", () => {

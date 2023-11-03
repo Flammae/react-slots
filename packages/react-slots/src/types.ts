@@ -141,7 +141,13 @@ type OmitDisallowedProps<T extends {}> = T extends
   | { key?: any }
   | { as?: any }
   | { ref?: any }
-  ? { [P in Exclude<keyof T, "children" | "as" | "key" | "ref">]: T[P] }
+  | { "slot-name"?: any }
+  ? {
+      [P in Exclude<
+        keyof T,
+        "children" | "as" | "key" | "ref" | "slot-name"
+      >]: T[P];
+    }
   : T;
 
 type DistributiveKeyOf<T extends {}> = T extends unknown ? keyof T : never;

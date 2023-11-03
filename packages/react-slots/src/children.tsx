@@ -17,16 +17,22 @@ import {
 import { HiddenArg } from "./HiddenArg";
 import { template } from "./template";
 
+const Slot = (props: any) => props.children;
 function createSlotElement(
-  wrapper: React.ElementType,
-  key: React.Key | undefined,
   children: React.ReactNode,
+  key: React.Key | undefined,
+  slotNameAttr: string | undefined,
+  // Wrapper was initially a fragment but you can't have "slot-name" attr on it
+  Wrapper: React.ElementType = Slot,
 ) {
-  return React.createElement(
-    wrapper,
-    key !== undefined ? { key } : null,
-    children,
-  );
+  const props = {
+    "slot-name": slotNameAttr,
+    key: key,
+  };
+  if (key === undefined) delete props.key;
+  if (slotNameAttr === undefined) delete props["slot-name"];
+
+  return React.createElement(Wrapper, props, children);
 }
 
 function validateProps(props: {}) {
@@ -114,9 +120,10 @@ export default class Children {
     slotName: string,
     defaultContent: React.ReactNode,
     props: {},
+    slotKey: React.Key | undefined,
+    slotNameAttr: string | undefined, // slot-name attribute on slot element
     previousOverrideConfig: OverrideConfig[],
     previousDefaultContent: React.ReactNode,
-    slotKey?: React.Key,
   ): React.ReactElement {
     validateProps(props);
     // It's important that we don't remove the key that consumer provides on both
@@ -137,19 +144,19 @@ export default class Children {
     );
 
     if (!this.has(slotName)) {
-      return createSlotElement(Wrapper, slotKey, [
+      return createSlotElement(
         shouldDiscard(_defaultContent)
           ? previousDefaultContent
           : _defaultContent,
-      ]);
+        slotKey,
+        slotNameAttr,
+      );
     }
 
     const children = this.children.get(slotName)!;
 
     if (!children.hasTemplate) {
       return createSlotElement(
-        Wrapper,
-        slotKey,
         applyOverrideToAll(
           children.nodes,
           config,
@@ -157,12 +164,12 @@ export default class Children {
           slotName,
           null,
         ) as React.ReactNode[],
+        slotKey,
+        slotNameAttr,
       );
     }
 
     return createSlotElement(
-      Wrapper,
-      slotKey,
       React.Children.map(children.nodes, (node) => {
         if (isTemplateElement(node)) {
           let {
@@ -194,7 +201,6 @@ export default class Children {
 
             // when a slot A is being rendered by another slot B, A overrides B
             // in both default content and props
-
             return Component(
               children,
               {
@@ -225,6 +231,8 @@ export default class Children {
         const test = applyOverride(node, config, 0, slotName);
         return test;
       }),
+      slotKey,
+      slotNameAttr,
     );
   }
 

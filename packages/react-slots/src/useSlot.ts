@@ -54,18 +54,20 @@ class SlotProxyFactory<T extends SlotChildren> {
         }
 
         let _props;
+        let _slotNameAttr;
         let _key = key;
 
-        if (typeof props === "undefined" || props === null) {
+        if (props == undefined) {
           _props = {};
         } else if (typeof props !== "object") {
           throw new Error(
             "`props` must be an object, instead saw " + typeof props,
           );
-        } else if ("key" in props) {
-          let { key, ...rest } = props;
-          _key = key as any; // React will handle the bad keys
+        } else if ("key" in props || "slot-name" in props) {
+          let { key, "slot-name": slotNameAttr, ...rest } = props as any;
           _props = rest;
+          _slotNameAttr = slotNameAttr;
+          _key = key;
         } else {
           _props = props;
         }
@@ -74,6 +76,8 @@ class SlotProxyFactory<T extends SlotChildren> {
           slotName,
           defaultNode,
           _props,
+          _key,
+          _slotNameAttr,
           hiddenPreviousConfig && hiddenPreviousConfig instanceof HiddenArg
             ? hiddenPreviousConfig.arg
             : [],
@@ -81,7 +85,6 @@ class SlotProxyFactory<T extends SlotChildren> {
             hiddenPreviousDefaultNode instanceof HiddenArg
             ? hiddenPreviousDefaultNode.arg
             : [],
-          _key,
         );
       },
       {

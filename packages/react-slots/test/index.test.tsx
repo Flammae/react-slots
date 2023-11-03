@@ -559,6 +559,33 @@ describe("Slot function", () => {
 			</DocumentFragment>
 		`);
   });
+
+  test("accepts slot-name prop that can be used to specify slot for child", () => {
+    function Child({ children }: any) {
+      const { slot } = useSlot(children);
+      return slot.foo();
+    }
+
+    function Parent({ children }: any) {
+      const { slot } = useSlot(children);
+
+      return <Child>{slot.default(null, { "slot-name": "foo" })}</Child>;
+    }
+
+    const { asFragment } = render(
+      <Parent>
+        <div>content</div>
+      </Parent>,
+    );
+
+    expect(asFragment()).toMatchInlineSnapshot(`
+      <DocumentFragment>
+        <div>
+          content
+        </div>
+      </DocumentFragment>
+    `);
+  });
 });
 
 describe("Template as slot function", () => {

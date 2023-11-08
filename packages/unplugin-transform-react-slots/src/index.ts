@@ -83,5 +83,5 @@ export default createUnplugin<Options | undefined, false>((rawOptions) => {
   };
 }) as Pick<
   UnpluginInstance<Options | undefined, false>,
-  "esbuild" | "rollup" | "vite"
+  "esbuild" | "rollup" | "vite" | "webpack"
 >;

@@ -40,6 +40,10 @@
     "./esbuild": {
       "require": "./dist/esbuild.js",
       "import": "./dist/esbuild.mjs"
+    },
+    "./webpack": {
+      "require": "./dist/webpack.js",
+      "import": "./dist/webpack.mjs"
     }
   },
   "scripts": {

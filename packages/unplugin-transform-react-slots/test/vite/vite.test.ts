@@ -35,7 +35,17 @@ describe("Esbuild config", () => {
   });
   test("transforms slot elements to functions", async () => {
     const [js, ts] = await Promise.all([working, workingTS]);
-    expect(includesLast(js, "slot.default(null)")).toBe(true);
-    expect(includesLast(ts, "slot.default(null)")).toBe(true);
+    expect(
+      includesLast(
+        js,
+        'slot.default(/* @__PURE__ */ reactExports.createElement("default-content-wrapper", null));',
+      ),
+    ).toBe(true);
+    expect(
+      includesLast(
+        ts,
+        'slot.default(/* @__PURE__ */ React.createElement("default-content-wrapper", null));',
+      ),
+    ).toBe(true);
   });
 });

@@ -63,7 +63,12 @@ describe("Rollup config", () => {
 
   test("transforms slot elements to functions", async () => {
     const [js, ts] = await Promise.all([working, workingTS]);
-    expect(includesLast(js, "slot.default(null)")).toBe(true);
+    expect(
+      includesLast(
+        js,
+        `slot.default( /*#__PURE__*/React3.createElement("default-content-wrapper", null));`,
+      ),
+    ).toBe(true);
     expect(
       includesLast(
         js,
@@ -71,7 +76,12 @@ describe("Rollup config", () => {
       ),
     ).toBe(true);
 
-    expect(includesLast(ts, "slot.default(null)")).toBe(true);
+    expect(
+      includesLast(
+        ts,
+        `slot.default(React.createElement("default-content-wrapper", null)); `,
+      ),
+    ).toBe(true);
     expect(
       includesLast(
         ts,

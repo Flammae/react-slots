@@ -1,5 +1,20 @@
 # @beqa/unplugin-transform-react-slots
 
+## 1.0.0
+
+### Major Changes
+
+- v1 of babel-plugin-transform-react-slots required to work
+
+### Minor changes:
+
+- Webpack support
+
+### Patch Changes
+
+- Updated dependencies
+  - @beqa/babel-plugin-transform-react-slots@1.0.0
+
 ## 0.6.2
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 # @beqa/react-slots
 
+## 1.0.0
+
+### Major Changes
+
+- Restricted children of Template's `as` prop to extend ReactNode. Previously it
+  could be any type.
+- v1 of unplugin-transform-react-slots or babel-plugin-transform-react-slots
+  required.
+
+### Minor Changes:
+
+- Introduced OverrideNode element.
+- Allowed use of "slot-name" attribute on slot elements
+
+### Patch changes
+
+- Empty arrays no longer count as provided content
+
 ## 0.6.3
 
 ### Patch Changes

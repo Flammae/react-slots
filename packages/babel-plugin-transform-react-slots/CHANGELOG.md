@@ -1,5 +1,11 @@
 # @beqa/babel-plugin-transform-react-slots
 
+## 1.0.0
+
+### Major Changes
+
+- V1 of @beqa/react-slots required to work.
+
 ## 0.6.2
 
 ### Patch Changes

@@ -1,0 +1,10 @@
+{
+  "slot-pattern": "Slot Pattern",
+  "slot-and-has-slot": "Slot Element and hasSlot",
+  "templates": "Templates",
+  "type-safety": "Type-Safety",
+  "template-as-prop": "Template's as Prop",
+  "manipulating-slot-content": "Manipulating Slot Content With OverrideNode",
+  "enforcing-node-type": "Enforcing Node Type",
+  "overriding-props": "Overriding Props"
+}

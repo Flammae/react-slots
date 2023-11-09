@@ -1,0 +1,91 @@
+# Enforcing the Node Type
+
+One of the simplest and most common use cases for `OverrideNode` is enforcing
+that parents provide a specific type of node for a slot. This practice is common
+in regular HTML elements. For example, a `<ul>` element can only have `<li>` as
+a child, a `<select>` can only contain `<option>`, and a `<summary>` should be a
+direct child of `<details>`.
+
+To specify the allowed nodes for a slot, include `OverrideNode` with the
+`allowedNodes` prop as a top-level child of the slot element. The `allowedNodes`
+must be an array of:
+
+- Strings for built-in elements, like `"div"`.
+- References to custom components (e.g., `Button`, `MyCustomComponent`).
+- The `String` constructor (note the capital letter) for string nodes.
+- The `Number` constructor (note the capital letter) for number nodes.
+
+By default, when a parent provides a node that is not allowed, an error will be
+thrown. You can customize this behavior using the `enforce` prop on
+`OverrideNode`:
+
+- `enforce="throw"` throws an error.
+- `enforce="remove"` removes disallowed nodes.
+- `enforce="ignore"` keeps the disallowed nodes but doesn't execute custom logic
+  specified by `props` and `node` props for that node (More on that later).
+
+Here's an example with a `Heading` element that only allows string and number
+nodes, as well as the `span` element for its default slot:
+
+```jsx {7}
+function Heading({ children, level }) {
+  const { slot } = useSlot(children);
+  const HeadingElement = "h" + level;
+  return (
+    <HeadingElement>
+      <slot.default>
+        <OverrideNode allowedNodes={[String, Number, "span"]} />
+      </slot.default>
+    </HeadingElement>
+  );
+}
+
+// ✅ Correct usage:
+<Heading level={2}>This is a heading level {2}</Heading>;
+
+// ✅ Correct usage:
+<Heading level={2}>
+  This is a <span>heading</span> level {2}
+</Heading>;
+
+// ✅ Correct usage:
+<Heading level={2}>
+  <template.default>{() => "This is a "}</template.default>
+  <template.default>
+    <span>heading</span>
+  </template.default>
+</Heading>;
+
+// ❌ Incorrect; will throw an error:
+<Heading level={2}>
+  <h2>This is not allowed</h2>
+</Heading>;
+```
+
+And here's an example with a `List` element that only allows `ListItem` custom
+components for its default slot and removes any other nodes:
+
+```jsx {7}
+function ListItem() { // Implementation Omitted for brevity }
+
+function List({ children }) {
+	const { slot } = useSlot(children);
+	return (
+		<slot.default>
+			<OverrideNode allowedNodes={[ListItem]} enforce="remove" />
+		</slot.default>
+	)
+}
+
+// Usage:
+<List>
+	{/* Kept */}
+	<ListItem>Foo</ListItem>
+	{/* Kept */}
+	<template.default><ListItem>Bar</template.default>
+	{/* Removed */}
+	Baz
+	{/* Removed */}
+	<li>Qux</li>
+</List>
+```

@@ -1,0 +1,103 @@
+import { Callout } from "nextra/components";
+
+<aside>
+  <Callout>
+    Optimizing Your Documentation Experience: The tutorial is intended to be
+    read sequentially, with each section building upon the previous one. Once
+    you have completed the tutorial, feel free to explore the
+    [advanced](/advanced/multiple-override-node) documentation in any order you
+    prefer.
+  </Callout>
+</aside>
+
+# The Slot Pattern
+
+The slot pattern allows you to divide parent-provided content and tell a
+component where to render each "part". In a typical React component, this is
+achieved using 'render props'. Components receive different parts of content as
+props and render each one in their specified slots.
+
+For instance your typical `Button` component might accept `children`,
+`leftIcon`, and `rightIcon` props, and if provided, render them in their
+pre-determined places. With `react-slots`, you no longer need specific props to
+define slot content; everything is managed through `children`.
+
+## Writing Your First Slotted Component
+
+To begin using slots, you'll employ the `useSlot` hook. It only requires the
+`children` argument and returns the `slot` object. The keys in the slot object
+represent the names of the slots intended for use within the component.
+
+Let's implement `Button` component using `react-slots`:
+
+```jsx
+import { useSlot } from "@beqa/react-slots";
+
+function Button({ children, onClick }) {
+  const { slot } = useSlot(children);
+
+  return (
+    <button onClick={onClick}>
+      <slot.leftIcon />
+      <span>
+        <slot.default />
+      </span>
+      <slot.rightIcon />
+    </button>
+  );
+}
+```
+
+## Using Slotted Components
+
+When passing children to this component, you need a way to designate which
+elements are for the `leftIcon` and `rightIcon` slots. You achieve this by
+adding a `slot-name` attribute to any element or component passed to the
+`Button` as children (note: elements marked with `slot-name` must be direct
+children of the `Button`). **The `default` slot is special, because any
+top-level node lacking a `slot-name` attribute automatically lands in the
+`default` slot.**
+
+Let's create a `[Add +]` button using this component:
+
+```jsx
+import Button from "./Button.jsx";
+
+function SomeComponent() {
+  return (
+    <div>
+      Add item to My collection?
+      <Button>
+        Add <span slot-name="rightIcon">+</span>
+      </Button>
+    </div>
+  );
+}
+```
+
+Rendered HTML from this component will look like this:
+
+```html
+<div>
+  <button>
+    <span>Add</span>
+    <span>+</span>
+  </button>
+</div>
+```
+
+In a real-world app, the `rightIcon` would likely involve an `Icon` component
+instead of a simple span. Note that `leftIcon` won't render anything because it
+wasn't specified by the parent.
+
+## TL;DR
+
+- The `useSlot` hook converts component children into slottable content.
+- Keys in the `slot` object (returned from `useSlot`) represent slot names and
+  can be placed anywhere within the component.
+- A Parent can designate elements for each slot by adding a `slot-name`
+  attribute.
+- The `slot-name` attribute can only be applied to elements and components that
+  are direct children of slotted components (doesn't work on nested elements).
+- Nodes without a `slot-name` attribute automatically go into the `default`
+  slot.

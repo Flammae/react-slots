@@ -1,0 +1,134 @@
+# Composing Slotted Components
+
+Let's consider a slotted component called `Child`. The `Child` component has a
+`label` slot that accepts a `isSelected` prop. We'll use TypeScript for this
+example.
+
+```tsx
+type Props = {
+  children: SlotChildren<Slot<"label", { isSelected: boolean }>>;
+};
+
+function Child({ children }: Props) {
+  const { slot } = useSlot(children);
+  return <slot.label isSelected={someDynamicStateValue}>Label</slot.label>;
+}
+
+const childTemplate = createTemplate<Props["children"]>();
+```
+
+Now, we want to use the `Child` component within a `Parent` component. The
+`Parent` component has a `default` slot that, if provided, needs to go into the
+`Child` component's `label` slot. There are three ways to achieve this.
+
+**Option one:** Adding a `slot-name` attribute to the parent's slot.
+
+```tsx
+function Parent({ children }) {
+  const { slot } = useSlot(children);
+  return (
+    <Child>
+      <slot.default slot-name="label">Label</slot.default>
+    </Child>
+  );
+}
+```
+
+With this approach, when a consumer provides `default` slot content, it goes
+into the child's `label` slot. However, this approach has drawbacks:
+
+- The consumer can no longer access the `isSelected` prop.
+- If we don't specify fallback content inside the `Parent`, there will be no
+  fallback.
+
+**Option two:** Using child's template to render own slot.
+
+```tsx
+function Parent({ children }) {
+  const { slot } = useSlot(children);
+  return (
+    <Child>
+      <childTemplate.label>
+        {({ isSelected }) => <slot.default isSelected={isSelected} />}
+      </childTemplate.label>
+    </Child>
+  );
+}
+```
+
+Now, a consumer can access the `isSelected` prop if desired, but the second
+problem still remains; the old fallback is gone.
+
+**Option three:** The "Template as Slot" pattern.
+
+```tsx
+function Parent({ children }) {
+  const { slot } = useSlot(children);
+  return (
+    <Child>
+      <childTemplate.label as={slot.default}>
+        {/* You can override the child's fallback here */}
+      </childTemplate.label>
+    </Child>
+  );
+}
+```
+
+This is the most powerful and type-safe option. When you use this method:
+
+- The child's specified props are merged with the parent's specified props. If
+  they specify the same prop, the parent's version will override the child's.
+- If no content is provided, the parent's fallback is rendered. If the parent
+  did not provide a fallback, then the child's fallback is used.
+- TypeScript will raise an error if the parent's specified props do not extend
+  the child's specified props.
+- **A function can no longer be used as the `children` of a template that has
+  the `as` prop set to a slot.**
+
+**Something interesting also happens when this syntax is used with slots that
+have `OverrideNode`:**
+
+- If the parent's "template as slot" element includes `OverrideNode` in its
+  children and the child's slot also has `OverrideNode`, then the parent's
+  `OverrideNode` will apply to the provided content first, and its result will
+  be passed to the child's `OverrideNode`.
+- If content isn't provided, then all of the child's `OverrideNode` logic will
+  also apply to the parent's "template as slot" specified fallback content.
+  Additionally, if the "template as slot" specified fallback content is wrapped
+  in `OverrideNode`, the parent's `OverrideNode` logic will be applied first.
+
+```jsx
+function Child({ children }) {
+  const { slot } = useSlot(children);
+
+  return (
+    <slot.default>
+      <OverrideNode props={{ id: (current) => `${current} child-added` }} />
+    </slot.default>
+  );
+}
+
+function Parent({ children }) {
+  const { slot } = useSlot(children);
+
+  return (
+    <slot.default>
+      <OverrideNode props={{ id: (current) => `${current} parent-added` }}>
+        <div props={{ id: "fallbacK-id" }}>Parent's fallback</div>
+      </OverrideNode>
+    </slot.default>
+  );
+}
+
+// With provided content
+<Parent>
+  <div id="provided-id">Provided content</div>
+</Parent>;
+// Expected HTML output:
+<div id="provided-id parent-added child-added">Provided content</div>;
+
+// Without provided content
+<Parent />;
+// Expected HTML output:
+<div id="fallback-id parent-added child-added">Parent's fallback</div>;
+```

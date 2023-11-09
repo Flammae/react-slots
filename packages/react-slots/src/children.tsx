@@ -131,8 +131,6 @@ export default class Children {
     // removed from the tree but we insert (usually) a fragment there with the same key that
     // was specified on the element.
 
-    const Wrapper = React.Fragment;
-
     let { config, children: _defaultContent } = extractOverrideConfig(
       React.isValidElement(defaultContent) &&
         // babel-plugin-transform-react-slots wraps children with a special element called default-content-wrapper

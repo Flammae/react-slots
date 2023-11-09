@@ -1,0 +1,47 @@
+# Recommendations
+
+## Better IDE Experience With Typescript
+
+If you're working with TypeScript, you can take steps to streamline your
+development process by moving the `Slot` unions into the template argument of
+your component like this:
+
+```tsx
+type Props<T> = {
+	children: SlotChildren<T>,
+	someOtherProp1: string,
+	someOtherProp2: number
+}
+
+function MyComponent<T extends Slot<{ prop: string }> | Slot<"foo">>(props: Props<T>) {
+	return ...
+}
+```
+
+While this syntax may seem a bit more substantial, it offers the advantage of
+allowing you to easily identify the available slots for a component by hovering
+over its name. This means you won't need to navigate through the file to see
+which slots are supported.
+
+## Untyped Templates and `noUncheckedIndexedAccess`
+
+In TypeScript, it's not possible to type an object that includes every possible
+property, which `template` and `slot` do. This can be frustrating when using
+untyped `template` or `slot` in your code, as it may lead to an error like this:
+
+```
+'template.default' cannot be used as a JSX component.
+Its type 'TemplateComponent<string, any> | undefined' is not a valid JSX element type.
+Type 'undefined' is not assignable to type 'ElementType'.
+```
+
+This error will only appear if you have `noUncheckedIndexedAccess` set to `true`
+in your `tsconfig` (by default, this rule is off). If you prefer to keep this
+rule enabled, you have two alternative options:
+
+1. Always type your `children` with `SlotChildren` and `Slot` and utilize typed
+   templates created with `CreateTemplate`.
+2. Check if the property exists before accessing it, like this:
+   `template.default && <template.default />`. However, please note that this
+   check is obsolete because every property on the `template` and `slot` objects
+   is always defined.

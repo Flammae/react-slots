@@ -1,0 +1,91 @@
+import { Callout } from "nextra/components";
+
+# Template `as` Prop
+
+By default, when a slot encounters a template element, it renders the template's
+`children` within a `React.Fragment`. You can change the wrapper element to any
+valid React element using the `as` prop. Any props you pass to a template with
+the `as` prop specified will be applied to that element.
+
+```jsx
+function Child({ children }) {
+  const { slot } = useSlot();
+  return <slot.default />;
+}
+
+// Intrinsic elements
+<Child>
+  <template.default as="div" className="foo">
+    Content
+  </template.default>
+</Child>;
+// Expected HTML output:
+<div class="foo">Content</div>;
+
+// The template element's child function is executed first
+<Child>
+  <template.default as="h1" id="foo">
+    {() => <span>Content</span>}
+  </template.default>
+</Child>;
+// Expected HTML output:
+<h1 id="foo">
+  <span>Content</span>
+</h1>;
+
+// Custom components
+function Heading({ level, children }) {
+  const Element = "h" + level;
+  return <Element>{children}</Element>;
+}
+<Child>
+  <template.default as={Heading} level={2}>
+    <span>Content</span>
+  </template.default>
+</Child>;
+// Expected HTML output:
+<h2>
+  <span>Content</span>
+</h2>;
+```
+
+<Callout type="info">
+  Note: Only elements with an available `children` prop of type `ReactNode` can
+  be used for the template's `as` prop.
+</Callout>
+
+## Caution: Template as Custom Component Footgun
+
+When you specify a custom component with the template element's `as` prop, you
+must exercise caution. This is because the `children` you specify for the
+template element won't be the same `children` that will be passed to the `as`
+element. `react-slots` is likely to modify the `children` in a way that's
+significantly different from what you might expect. This is especially true when
+`OverrideNode` is used within the slot. For this reason, the `as` element's
+`children` must be of type `ReactNode` and should only be used within the `as`
+element for the purpose of rendering.
+
+```tsx
+function MyComponent({ children }: { children: string }) {
+  performSideEffect(children);
+  return <div>{children}</div>;
+}
+// ❌ Not Allowed: MyComponent expects a string to perform a side effect with.
+// The provided node will likely not be a string.
+<template.foo as={MyComponent}>Content</template.foo>;
+
+function MySecondComponent({ children }: { children: React.ReactNode }) {
+  return shouldRenderChildren ? children : "default children";
+}
+// ⚠️ Caution: MySecondComponent may or may not render children.
+<template.foo as={MySecondComponent}>Content</template.foo>;
+
+function MyThirdComponent({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
+}
+// ✅ Allowed: MyThirdComponent always returns unmodified children.
+<template.foo as={MyThirdComponent}>Content</template.foo>;
+```
+
+If you are using typescript, compiler won't allow you to specify a component
+whose `children` is not assignable to `ReactNode`

@@ -1,0 +1,44 @@
+# Tutorial: Overriding Node With the `node` Prop
+
+Sometimes you may need to do more with the provided node than simply overriding
+props. The `node` prop is designed to address advanced use cases.
+
+The `node` prop is a function that takes each allowed node as an argument and
+expects to return a new node.
+
+You can use the `node` function to:
+
+- Wrap a node in an element.
+- Change the type of a node.
+- Modify the props of an element.
+- Implement custom validation for the node.
+- Perform any operation that requires full access to the node.
+
+## Examples
+
+```jsx
+// Render each item for the default slot in a bullet list
+<slot.default>
+  <OverrideNode
+    allowedNodes={[Number, String]}
+    node={(node) => (
+      <li>
+        <Icon name="bullet-point" />
+        {node}
+      </li>
+    )}
+  />
+</slot.default>;
+
+// Throw an error if the provided node is not an intrinsic HTML element
+<slot.default>
+  <OverrideNode
+    node={(node) => {
+      if (typeof node.type !== "string") {
+        throw "The default slot must be an HTML element";
+      }
+      return node;
+    }}
+  />
+</slot.default>;
+```

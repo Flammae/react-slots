@@ -1,0 +1,38 @@
+# Slot Function
+
+Slot elements are essentially functions and are transformed back into functions
+by the `transform-react-slots` plugin during build time. Whether you've chosen
+to enable the build-time plugin or not, you can always use slots as functions.
+
+You can provide fallback content to slot functions using the first argument and
+props with the second argument. Here are some examples showing slot elements and
+their equivalent slot functions:
+
+```jsx
+<slot.default />;
+// Is equivalent to:
+slot.default();
+
+<slot.foo>Fallback</slot.foo>;
+// Is equivalent to:
+slot.foo("Fallback");
+
+<slot.foo prop1={"foo"} prop2={42} {...spreadProps} />;
+// Is equivalent to:
+slot.foo(null, { prop1: "foo", prop2: 42, ...spreadProps });
+
+<slot.bar prop={42}>
+  <OverrideNode>Fallback 1</OverrideNode>
+  Fallback 2
+</slot.bar>;
+// Is equivalent to:
+slot.bar([<OverrideNode>Fallback 1</OverrideNode>, "Fallback 2"], { prop: 42 });
+
+<slot.default prop="foo" key={1}>
+  Fallback
+</slot.default>;
+// Is equivalent to:
+slot.default("Fallback", { prop: "foo", key: 1 });
+// It is also equivalent to:
+slot.default("Fallback", { prop: "foo" }, 1);
+```

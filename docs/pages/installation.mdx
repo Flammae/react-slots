@@ -1,0 +1,268 @@
+import { Callout } from "nextra/components";
+
+# Installation
+
+The installation process consists of two parts: installing the **core library**
+(around **4kb gzipped** piece of code that runs in your users' browsers and
+handles the core logic) and an optional **compile-time plugin** (for transpiling
+JSX syntax for your slot elements into regular function invocations).
+
+## Install the Core Library
+
+```bash
+npm i @beqa/react-slots
+```
+
+## Install the Compile-Time Plugin (Optional)
+
+The `transform-react-slots` plugin is necessary to transform slot elements
+returned by `useSlot()` into function invocations, as demonstrated below:
+
+```jsx
+// Before transpilation
+<slot.default prop1={"foo"} prop2={42}>
+  Fallback
+</slot.default>;
+// After transpilation
+slot.default("Fallback", { prop1: "foo", prop2: 42 });
+```
+
+To install the compile-time plugin, check which build tool is used in your
+project and **follow the specific instructions provided for that tool**. Many
+projects use Webpack and Babel, but other projects might utilize different tools
+such as Vite, esbuild, or Rollup.
+
+<Callout>
+  Note: Installing the compile-time plugin is recommended, but you have the
+  option to skip it and start using slots as functions immediately.
+</Callout>
+
+<details>
+  <summary>Nextjs</summary>
+
+Install the core library if you haven't already
+
+```bash
+npm i @beqa/react-slots
+```
+
+Install `@beqa/unplugin-transform-react-slots`
+
+```bash
+npm i -D @beqa/unplugin-transform-react-slots
+```
+
+Import and add webpack plugin to the plugins list
+
+```js
+const { default: unplugin } = require("@beqa/unplugin-transform-react-slots");
+
+const nextConfig = {
+  webpack(config) {
+    // Add this line
+    config.plugins.unshift(unplugin.webpack());
+    // Don't forget to return config
+    return config;
+  },
+};
+
+module.exports = nextConfig;
+```
+
+</details>
+
+<details>
+  <summary>CRA</summary>
+
+If you have an un-ejected Create React App project and want to keep it that way,
+we recommend using Craco. Craco allows you to override Create React App's
+configuration without ejecting. You can read about
+[how to start using Craco and the risks associated with it](https://craco.js.org/docs/).
+If your project is ejected, follow the instructions for configuring
+`react-slots` with Babel.
+
+Install the core library if you haven't already
+
+```bash
+npm i @beqa/react-slots
+```
+
+Install `@beqa/unplugin-transform-react-slots`
+
+```bash
+npm i -D @beqa/unplugin-transform-react-slots
+```
+
+Add a `craco.config.js` file in the root of your project and include the Webpack
+plugin:
+
+```js
+const { default: unplugin } = require("@beqa/unplugin-transform-react-slots");
+
+module.exports = {
+  webpack: {
+    plugins: { add: [unplugin.webpack()] },
+  },
+};
+```
+
+</details>
+
+<details>
+<summary>Vite</summary>
+
+Install the core library if you haven't already
+
+```bash
+npm i @beqa/react-slots
+```
+
+Install `@beqa/unplugin-transform-react-slots`
+
+```bash
+npm i -D @beqa/unplugin-transform-react-slots
+```
+
+Add `unplugin.vite` to your`vite.config.js` before the react plugin:
+
+```js
+import unplugin from "@beqa/unplugin-transform-react-slots";
+import react from "@vitejs/plugin-react";
+
+export default {
+  // Make sure unplugin.vite is specified before react in your plugins list
+  plugins: [unplugin.vite(), react()],
+};
+```
+
+</details>
+
+<details>
+  <summary>esbuild</summary>
+
+Install the core library if you haven't already
+
+```bash
+npm i @beqa/react-slots
+```
+
+Install `@beqa/unplugin-transform-react-slots`
+
+```bash
+npm i -D @beqa/unplugin-transform-react-slots
+```
+
+Add `unplugin.esbuild` to your plugins list in your esbuild config
+
+```js
+import unplugin from "@beqa/unplugin-transform-react-slots";
+
+await build({
+  plugins: [unplugin.esbuild()],
+});
+```
+
+</details>
+
+<details>
+  <summary>Rollup</summary>
+
+Install the core library if you haven't already
+
+```bash
+npm i @beqa/react-slots
+```
+
+Install `@beqa/unplugin-transform-react-slots`
+
+```bash
+npm i -D @beqa/unplugin-transform-react-slots
+```
+
+Add the `unplugin.rollup` to your plugins list before syntax transformation
+plugins in your `rollup.config.js`:
+
+```js
+import unplugin from "@beqa/unplugin-transform-react-slots";
+
+export default {
+	...
+	plugins: [
+		unplugin.rollup(),
+		// ... other plugins
+	]
+}
+```
+
+</details>
+
+<details>
+  <summary>Babel</summary>
+
+Install the core library if you haven't already
+
+```bash
+npm i @beqa/react-slots
+```
+
+Install `@beqa/babel-plugin-transform-react-slots`
+
+```bash
+npm i -D @beqa/babel-plugin-transform-react-slots
+```
+
+Add the plugin to your `.babelrc` file.
+
+```json
+{
+  "plugins": ["@beqa/babel-plugin-transform-react-slots"]
+}
+```
+
+</details>
+
+<details>
+  <summary>Performance Optimization with Unplugin Options</summary>
+
+This section is only relevant to you if you've been instructed to install
+`@beqa/unplugin-transform-react-slots` for your build tool.
+
+```tsx
+type Options = {
+  include: RegEx;
+  exclude: RegEx | RegEx[];
+};
+
+const options = {
+  include: /\.(tsx)|(jsx)|(js)/,
+} satisfies Options;
+
+unplugin.yourBundler(options);
+```
+
+`unplugin-transform-react-slots` is designed to be fast at finding and
+transforming React slots. By default, it checks every JavaScript (js), JSX
+(jsx), and TypeScript (tsx) file in your project, excluding files in the
+node_modules directory. However, you can optimize its performance further by
+using specific options.
+
+**include Option**
+
+If you have other tools configured in a way that JSX syntax is only used in
+certain files, you can provide the include regular expression (RegEx) as an
+argument to your plugin. For instance:
+
+```tsx
+unplugin.yourBundler({ include: /\.(tsx)|(jsx)/ });
+```
+
+With this configuration, the plugin will only check .tsx and .jsx files in your
+project, improving performance by skipping unnecessary files.
+
+**exclude Option**
+
+Additionally, you can use the `exclude` option to exclude specific files or
+directories from being processed. This can be useful for excluding configuration
+files or large files that don't need slot transformation:
+
+</details>

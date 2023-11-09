@@ -1,0 +1,124 @@
+import { Callout } from "nextra/components";
+
+# Overriding Props
+
+Another useful feature is overriding the props of nodes that are allowed. To
+achieve this, you can specify the `props` property on the `OverrideNode`
+element.
+
+The `props` can be specified in two ways:
+
+- As a function that receives all the props of a node and is expected to return
+  an object that will be shallow merged with the original props object.
+- As an object where the keys are prop names, and the values are functions.
+  These functions receive the current value for the props they are overriding
+  and are expected to return the overridden value.
+
+## Prop Function
+
+Here's an example with an `Edit` element that adds a `contentEditable` attribute
+to every valid element in its children that has a `data-editable` attribute:
+
+```jsx {7-9}
+function Edit({ children, enabled }) {
+  const { slot } = useSlot(children);
+
+  return (
+    <slot.default>
+      <OverrideNode
+        props={(props) => ({
+          contenteditable: enabled && props["data-editable"] ? "true" : "false",
+        })}
+      >
+        <div data-editable>{enabled && "Start editing me"}</div>
+      </OverrideNode>
+    </slot.default>
+  );
+}
+
+// Usage
+<Edit enabled>
+  <div data-editable>You can edit me</div>
+  <div>You can't edit me</div>
+  Can't edit me either
+</Edit>;
+
+// This is also editable because of the fallback content
+<Edit enabled />;
+```
+
+## Props Object
+
+Here's an example using an alternative syntax for `props`:
+
+```jsx {4-9}
+<slot.trigger>
+	<OverrideNode
+		allowedNodes={["button"]}
+		props={{
+			// Append className for styling purposes
+			className: (current) => current == undefined ? "added-class" : `${current} added-class`,
+			// Provide a default click handler if none is provided
+			onClick: (current) => current || () => alert("Clicked!"),
+		}}
+	>
+		<button>Trigger</button>
+	</OverrideNode>
+</slot.trigger>
+```
+
+<Callout type="info">
+  Note: The `props` logic will only be executed for valid React elements that
+  satisfy the constraints of `allowedNodes`. For instance, if your
+  `allowedNodes` includes values like `[String, Number, "button", MyComponent]`,
+  the `props` function will only be called with the props of `'button'` and
+  `MyComponent`.
+</Callout>
+
+## Built-in Prop Override Helpers
+
+`react-slots` includes built-in functions to assist you with common prop
+override operations. These functions are accessible directly from the
+`OverrideNode` object and are designed to be used in the `props` object of
+`OverrideNode`.
+
+- `OverrideNode.stringAppend`: Appends a string value to an existing prop with a
+  space in between. If the existing prop is `null` or `undefined`, the new value
+  will replace the old one. If the existing prop is not a string, it will be
+  converted to a string. This is handy for adding to `className` or `id` without
+  discarding the existing value.
+- `OverrideNode.stringPrepend`: Prepends a string value to an existing prop with
+  a space. If the existing prop is `null` or `undefined`, the new value will
+  replace the old one. If the existing prop is not a string, it will be
+  converted to a string. This is useful for adding to the beginning of
+  `className` or `id` without losing the existing value.
+- `OverrideNode.override`: Replaces the old prop with a new value.
+- `OverrideNode.chainAfter`: Takes a function as an argument and calls the
+  provided function after the original function with the original arguments. If
+  the original function is `undefined`, only the new function will be called. If
+  the original value is not a function, an error is thrown. This is helpful for
+  performing a side effect after an event without losing the original handler.
+- `OverrideNode.chainBefore`: Takes a function as an argument and calls the
+  provided function before the original function with the original arguments. If
+  the original function is `undefined`, only the new function will be called. If
+  the original value is not a function, an error is thrown. This is useful for
+  performing a side effect before an event without losing the original handler.
+
+**Example:**
+
+```jsx
+<slot.trigger>
+  <OverrideNode
+    allowedNodes={["button"]}
+    props={{
+      className: OverrideNode.stringAppend("appended-class"),
+      id: OverrideNode.stringPrepend("prepended-id"),
+      onClick: OverrideNode.chainAfter(() => alert("After click!")),
+      onKeyDown: OverrideNode.chainBefore((e) => {
+        alert(e.key);
+      }),
+      type: OverrideNode.override("submit"),
+    }}
+  />
+</slot.trigger>
+```

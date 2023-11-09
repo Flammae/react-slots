@@ -1,0 +1,84 @@
+import { Callout } from "nextra/components";
+
+# Templates
+
+As you might have seen, there's a limitation when assigning elements to slots in
+a parent component using the `slot-name` attribute. Even simple content like
+strings or numbers needs to be wrapped in an element to use the `slot-name`
+attribute.
+
+Template elements offer an alternative way to specify content for slots without
+the need for the `slot-name` attribute. They work similarly to slot elements,
+where they are objects with keys corresponding to the slot names.
+
+Let's see how to use template elements to provide content to the `Button`
+component from one of our earlier examples:
+
+```jsx
+import { template } from "@beqa/react-slots";
+import { Button } from "./Button.jsx";
+
+function SomeComponent() {
+  return (
+    <div>
+      Add item to my collection?
+      <Button>
+        Add
+        <template.rightIcon>+</template.rightIcon>
+      </Button>
+    </div>
+  );
+}
+```
+
+## Accessing Child's Specified Props
+
+Templates can also perform an interesting trick. If the `children` of a template
+element is a function, it will be called with the props passed to its
+corresponding slot in the child component.
+
+In the [previous section](/tutorial/slot-and-has-slot#the-hasslot-object), we
+created the `ToggleButton` component, which passes a dynamic `isToggled` prop up
+to its parent. Here's how to access that prop in the parent with a template
+element:
+
+```jsx filename="SomeOtherComponent.jsx"
+<ToggleButton>
+  <template.default>
+    {(props) => (props.isToggled ? "On" : "Off")}
+  </template.default>
+</ToggleButton>
+```
+
+Please note that just because a prop was passed to the slot in the child
+component doesn't mean you must use a template with a `children` function inside
+the parent. If you don't need to use the `isToggled` state in the parent, you
+can provide a static value with or without a template. You can even provide
+multiple contents for the same slot, some of which may or may not depend on the
+`isToggled` state.
+
+```jsx filename="SomeOtherComponent.jsx"
+<ToggleButton>
+  <template.default>The toggle is: </template.default>
+  <template.default>
+    {(props) => (props.isToggled ? "On." : "Off.")}
+  </template.default>
+  But I'm always on
+</ToggleButton>
+```
+
+<Callout type="info">
+  When dealing with `default` slots, there's no need to wrap the function in a
+  `template.default` element to access the props passed to the corresponding
+  slot. Regular functions within the `children` are also executed with the props
+  passed to a `default` slot.
+</Callout>
+
+## TL;DR
+
+- Template elements offer an alternative way to specify slot content without
+  using the `slot-name` attribute.
+- They work similarly to slot elements, with keys corresponding to slot names.
+- You can access child component specified slots within templates.
+- Using templates, you can provide both static and dynamic content for the same
+  slot.

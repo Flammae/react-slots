@@ -1,0 +1,70 @@
+# Using Multiple `OverrideNode` Elements
+
+You can include multiple `OverrideNode` elements for a single slot as long as
+they are all top-level children. When you use multiple `OverrideNode` elements,
+their overrides are applied from top to bottom to the parent-provided content.
+The result of the previous override becomes the input for the next
+`OverrideNode`. When the parent doesn't provide content, only the `OverrideNode`
+elements that wrap the fallback content will be applied.
+
+In this example, a component restricts the node type for the "trigger" slot to
+be either a button element or a string and then handles their overrides
+separately:
+
+```jsx
+<slot.trigger>
+  <OverrideNode allowedNodes={["button", String]} />
+  {/* Button was provided */}
+  <OverrideNode
+    allowedNodes={[String]}
+    enforce="ignore" // Don't throw an error if not a string
+    node={(node) => {
+      <button onClick={myClickHandler}>{node}</button>;
+    }}
+  />
+  {/* String was provided */}
+  <OverrideNode
+    allowedNodes={["button"]}
+    enforce="ignore" // Don't throw an error if not a button
+    props={{
+      onClick: OverrideNode.chainAfter(myClickHandler),
+    }}
+  />
+  {/* Nothing was provided, render fallback */}
+  <button onClick={myClickHandler}>Trigger</button>
+</slot.trigger>
+```
+
+Here's an example that demonstrates the difference between applying overrides to
+provided content versus fallback content:
+
+```jsx
+function MyComponent(children) {
+  const { slot } = useSlot(children);
+
+  return (
+    <slot.default>
+      <OverrideNode node={(node) => <div>{node}</div>} />
+      <OverrideNode props={{ className: () => "added-class" }}>
+        <span>Fallback</span>
+      </OverrideNode>
+      <OverrideNode allowedNodes={["div"]} props={{ id: () => "added-id" }}>
+        <div>Second Fallback</div>
+      </OverrideNode>
+    </slot.default>
+  );
+}
+
+// Providing content:
+<MyComponent>Content</MyComponent>;
+// Expected HTML output:
+<div class="added-class" id="added-id">
+  Content
+</div>;
+
+// No content:
+<MyComponent />;
+// Expected HTML output:
+<span class="added-class">Fallback</span>;
+<div id="added-id">Second Fallback</div>;
+```

@@ -1,0 +1,23 @@
+# Troubleshooting
+
+## ``Unsupported syntax: `useSlot` or an object holding a nested `useSlot` value used inside ...``
+
+If you encounter this error message after initializing the compile-time plugin
+for your project, it likely indicates that the plugin is applied after React
+elements have already been transpiled. To resolve this issue, you should adjust
+your configuration to ensure that the plugin runs before other syntax
+transformations.
+
+This error occurs when useSlot or the return value of useSlot is used in a way
+that could potentially mutate slots before they are used. It's important to note
+that this is a specific error related to the compile-time plugin.
+
+If you wish to disable the transformation for a specific file where this error
+occurs, you can add the following comment at the beginning of the file:
+
+```js
+// @disable-transform-react-slots
+```
+
+After adding this comment, you should only use the function signature of slots
+in that file.

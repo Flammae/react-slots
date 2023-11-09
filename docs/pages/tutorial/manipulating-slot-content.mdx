@@ -1,0 +1,82 @@
+import { Callout } from "nextra/components";
+
+## Manipulating Slot Content With `OverrideNode`
+
+<aside>
+  <Callout>
+    If you've read the docs this far, I want to say thank you. 
+    I and ChatGPT engineers are very happy you're enjoying our work!
+
+    At this point, it's a good time to take a break, sip some coffee, and perhaps
+    play with the examples from the [introduction page](/introduction). The upcoming sections might
+    get a bit confusing because they intersect with the knowledge you've gained so
+    far.
+
+  </Callout>
+</aside>
+
+When you start using `react-slots`, you'll notice a new pattern emerging in your
+components. Instead of creating components with a massive list of props that
+control every aspect of the component's rendered content, you'll be drawn to
+creating components with "holes" meant to be filled with parent-provided
+**free-form content** and some logic that binds these holes or slots together.
+This is a good thing because it allows for a higher level of composability, and
+maintaining small pieces independently is much easier than maintaining giant
+components.
+
+Despite its benefits, parent-provided free-form content has a drawback: it's a
+black box. It might have any shape, its props, event listeners, or styles, and
+all of it is hidden away from you. This makes it challenging to integrate
+free-form content into the specific logic of your components.
+
+`OverrideNode` gives you direct access to the parent-provided nodes and exposes
+a convenient API to manipulate them right before they get rendered.
+
+You can use `OverrideNode` to:
+
+- Enforce node types.
+- Intercept element events and execute side-effects before or after their event
+  handlers.
+- Add or change element props.
+- Add aria attributes for accessibility.
+- Change the nodes in any way.
+
+`OverrideNode` is just a React element. It can be included as a direct child of
+a slot element. When present, it has the ability to override parent-provided
+content for the slot. Additionally, if the slot content is not provided, the
+children within `OverrideNode` will act as a fallback content and the override
+will apply to them.
+
+<Callout type="info">
+  `OverrideNode` always applies to the parent-provided content but only applies
+  to the section of the fallback content wrapped by the `OverrideNode`.
+</Callout>
+
+Let's take a look at some high-level examples before delving into the API
+documentation in the next sections:
+
+```jsx
+import { OverrideNode } from "@beqa/react-slots";
+
+// Throw an error if the parent provides any element other than "h1", "h2", "h3".
+// The rule doesn't apply to fallback content.
+<slot.default>
+  <OverrideNode allowedNodes={["h1", "h2", "h3"]} />
+  <div>
+    <h2>Fallback</h2>
+  </div>
+</slot.default>;
+
+// Remove any node other than a button from the parent's provided "trigger" slot content.
+// If the parent provides a button, intercept its onClick event.
+// The rule also applies to fallback content when content, which is <button>Trigger</button>.
+<slot.trigger>
+  <OverrideNode
+    allowedNodes={["button"]}
+    enforce="remove"
+    props={{ onClick: OverrideNode.chainAfter(() => alert("Button clicked")) }}
+  >
+    <button>Trigger</button>
+  </OverrideNode>
+</slot.trigger>;
+```

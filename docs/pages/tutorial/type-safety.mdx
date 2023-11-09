@@ -1,0 +1,124 @@
+import { Callout } from "nextra/components";
+
+# Type-Safety
+
+Type-safety is the most straightforward and powerful feature of `react-slots`.
+You're likely accustomed to annotating your `children` as `ReactNode`, but in
+`react-slots`, you should use two special types `SlotChildren` and `Slot` to
+annotate your `children`, and everything else will be automatically inferred.
+
+## Implementing a Type-Safe Component
+
+Let's see how to create a fully type-safe component in `react-slots` and delve
+into the details later. This type-safe `Dialog` component has two slots:
+
+- `trigger`: A label for the button that opens the dialog.
+- `default`: Content that becomes visible after the user clicks the trigger
+  button. It passes two props to its parent, `isOpen: boolean{:ts}` and
+  `close: () => void{:ts}`. A parent can access these props with a `default`
+  template.
+
+```tsx {10-12, 16,32} filename="Dialog.tsx"
+import {
+  SlotChildren,
+  Slot,
+  CreateTemplate,
+  useSlot,
+  template,
+} from "@beqa/react-slots";
+
+type Props = {
+  children: SlotChildren<
+    Slot<"trigger"> | Slot<{ isOpen: boolean; close: () => void }>
+  >;
+};
+
+function Dialog({ children }: Props) {
+  const { slot } = useSlot(children); // Inferred automatically
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>
+        <slot.trigger>Trigger Dialog</slot.trigger>
+      </button>
+      {isOpen && (
+        <slot.default isOpen={isOpen} close={() => setIsOpen(false)} />
+      )}
+    </>
+  );
+}
+
+// Create type-safe template specifically for dialog component
+const dialogTemplate = template as CreateTemplate<Props["children"]>;
+
+// Usage example
+<Dialog>
+  <dialogTemplate.trigger>Open Dialog</dialogTemplate.trigger>
+  {/* No need to wrap in dialogTemplate.default, it's still type-safe */}
+  {(props) => (
+    <div>
+      <h2>This is a dialog that opens after you click "Open Dialog"</h2>
+      <button onClick={props.close}>Close</button>
+    </div>
+  )}
+</Dialog>;
+```
+
+## The `SlotChildren` type
+
+`type SlotChildren{:ts}` is a generic type that expects a union of `Slot` types
+as its only type parameter. It enforces that the `children` of this component
+should be nodes of the type described by the `Slot` types. Note that `Slot`
+types, independent of `SlotChildren`, have no purpose.
+
+## The `Slot` type
+
+`type Slot{:ts}` is a generic type used to specify the slot name and props. It
+comes in multiple forms:
+
+- Two type parameters: `Slot<"foo", { bar: number }>{:ts}`. The first parameter
+  specifies the slot name, and the second specifies the slot props.
+- String as the only type parameter: `Slot<"foo">{:ts}`. This is a shorthand for
+  `Slot<"foo", {}>{:ts}`, useful when you only want to specify the slot name.
+- Object as the only type parameter: `Slot<{ baz: boolean }>{:ts}`. This is a
+  shorthand for `Slot<"default", { baz: boolean }>{:ts}`, used to specify props
+  for the `default` slot.
+- No type parameters: `Slot{:ts}`. This is a shorthand for
+  `Slot<"default", {}>{:ts}`, used for specifying the `default` slot with no
+  props.
+
+The `children` type annotation for the above `Dialog` component states that it
+expects at least one node as a child, which can be:
+
+- An element or component with the `slot-name="trigger"` attribute or a
+  `template.trigger` element.
+- Any node, including strings, numbers, elements or components without a
+  `slot-name` attribute or with a `slot-name: "default"` attribute, or a
+  `template.default` element that receives the `isOpen` and `close` props.
+
+## The `CreateTemplate` Type
+
+`type CreateTemplate<T extends SlotChildren>{:ts}` is a utility type that makes
+templates type-safe. It expects the same `children` type as the component it
+belongs to. Template objects typed with `CreateTemplate` only let you to use
+predefined slot names and automatically provide type hints for props.
+
+You can also create type-safe templates using the `createTemplate` function:
+
+```ts
+import { template } from "@beqa/react-slots";
+const fooTemplate = createTemplate<FooProps["children"]>();
+```
+
+<Callout type="info">
+  Recommendation #1: Define and export type-safe templates in the same file as
+  their components.
+</Callout>
+
+<Callout type="info">
+  Recommendation #2: Be cautious when changing slot names during refactoring.
+  TypeScript won't catch if you specify the wrong name with the slot-name
+  attribute, but it will catch type-related errors when type-safe templates are
+  used.
+</Callout>

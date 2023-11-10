@@ -271,6 +271,8 @@ function enforce<const T>(
               ? "string literal"
               : n === Number
               ? "number literal"
+              : typeof n === "function"
+              ? (n as any).displayName || n.name
               : n,
         )}`,
       );

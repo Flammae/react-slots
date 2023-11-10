@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 1.0.1
+
+### Patch Changes
+
+- 6311ae8: Fixed stringified functions displaying in an error
+
 ## 1.0.0
 
 ### Major Changes

@@ -1,34 +1,62 @@
 # beqa/react-slots - Responsible&nbsp;React&nbsp;Parenting
 
-> `react-slots` empowers you to prioritize composability in your component APIs.
+`react-slots` empowers you to prioritize composability in your component APIs.
 
-The core of `react-slots` is the slot pattern. It's designed to provide all the
-features you'd find in Vue and Svelte's slot implementations while keeping
-things familiar for React developers. This slot pattern, complemented by **great
-type inference features** and an **intuitive API for manipulating nodes**,
-allows you to design highly composable components with previously unimagined
-patterns in React.
+## Docs
+
+You can find the docs on the
+[docs website](https://react-slots-docs.vercel.app/)
 
 ## Examples
 
 | The code samples below represent actual implementations. No need to define external state or event handlers for these components to function. |
 | --------------------------------------------------------------------------------------------------------------------------------------------- |
 
-### Creating highly composable `Accordion` and `AccordionList` components using react-slots
+#### Creating highly composable `Accordion` and `AccordionList` components using react-slots
 
 Checkout
 [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?file=pages%2Findex.tsx)
 
-![Example showing usage of Accordion component built with react-slots](/packages/react-slots/readme-assets/Accordion.png)
+```jsx
+<AccordionList>
+  <Accordion key={1}>
+    <span slot-name="summary">First Accordion</span>
+    This part of Accordion is hidden
+  </Accordion>
+  <Accordion key={2}>
+    <span slot-name="summary">Second Accordion</span>
+    AccordionList makes it so that only one Accordion is open at a time
+  </Accordion>
+  <Accordion key={3}>
+    <span slot-name="summary">Third Accordion</span>
+    No external state required
+  </Accordion>
+</AccordionList>
+```
 
-### Creating highly composable `Dialog` and `DialogTrigger` components using react-slots
+#### Creating highly composable `Dialog` and `DialogTrigger` components using react-slots
 
 Checkout
 [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?file=pages%2Findex.tsx)
 
-![Example showing usage of Dialog component built with react-slots](/packages/react-slots/readme-assets/Accordion.png)
+```jsx
+<DialogTrigger>
+  <Button>Trigger Dialog</Button>
+  <Dialog slot-name="dialog">
+    <span slot-name="title">Look Ma, No External State</span>
+    <p slot-name="content">... And no event handlers.</p>
+    <p slot-name="content">Closes automatically on button click.</p>
+    <p slot-name="content">Can work with external state if desired.</p>
+    <Button
+      slot-name="secondary"
+      onClick={() => alert("But how are the button variants different?")}
+    >
+      Close??
+    </Button>
+    <Button slot-name="primary">Close!</Button>
+  </Dialog>
+</DialogTrigger>
+```
 
----
-
-| If you like this project please show support by starring it on [Github](https://github.com/Flammae/react-slots) |
-| --------------------------------------------------------------------------------------------------------------- |
+If you like this project please show support by starring it on
+[Github](https://github.com/Flammae/react-slots)

@@ -34,7 +34,7 @@ You can use the `node` function to:
 <slot.default>
   <OverrideNode
     node={(node) => {
-      if (typeof node.type !== "string") {
+      if (typeof node === "object" && typeof node.type !== "string") {
         throw "The default slot must be an HTML element";
       }
       return node;

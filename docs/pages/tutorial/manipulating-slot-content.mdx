@@ -69,7 +69,7 @@ import { OverrideNode } from "@beqa/react-slots";
 
 // Remove any node other than a button from the parent's provided "trigger" slot content.
 // If the parent provides a button, intercept its onClick event.
-// The rule also applies to fallback content when content, which is <button>Trigger</button>.
+// The rule also applies to fallback, which is <button>Trigger</button>.
 <slot.trigger>
   <OverrideNode
     allowedNodes={["button"]}

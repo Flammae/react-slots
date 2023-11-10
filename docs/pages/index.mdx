@@ -134,34 +134,38 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
   <Tabs.Tab>
     ```jsx
     function Dialog(props: Props) {
-      const { close } = useDialogTriggerContext();
+      const { close, titleId } = useDialogTriggerContext() || {};
       const { slot } = useSlot(props.children);
 
       return (
-        <div>
+        <div className="dialog">
           <slot.title />
           <slot.content />
           <div className="dialog__actions">
             <slot.secondary>
+              <OverrideNode allowedNodes={[Button, DialogTrigger]} />
               <OverrideNode
                 allowedNodes={[Button]}
+                enforce="ignore"
                 props={{
                   onClick: OverrideNode.chainAfter(close),
-                  variant: (prop) => prop || "secondary",
+                  variant: (prop) => prop || "secondary"
                 }}
               />
             </slot.secondary>
             <slot.primary>
+              <OverrideNode allowedNodes={[Button, DialogTrigger]} />
               <OverrideNode
                 allowedNodes={[Button]}
+                enforce="ignore"
                 props={{
                   onClick: OverrideNode.chainAfter(close),
-                  variant: (prop) => prop || "primary",
+                  variant: (prop) => prop || "primary"
                 }}
               />
             </slot.primary>
           </div>
-        </div> 
+        </div>
       );
     }
     ```
@@ -175,17 +179,15 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
       const [isOpen, setIsOpen] = useStateControl(
         props.isOpen,
         props.defaultIsOpen,
-        props.onToggle,
+        props.onToggle
       );
       const close = useCallback(() => setIsOpen(false), [setIsOpen]);
 
       return (
         <>
           <slot.default>
-            <OverrideNode allowedNodes={[Button, DialogTrigger]} enforce="throw" />
             <OverrideNode
               allowedNodes={[Button]}
-              enforce="ignore"
               props={{
                 onClick: OverrideNode.chainAfter(() => {
                   setIsOpen(!isOpen);

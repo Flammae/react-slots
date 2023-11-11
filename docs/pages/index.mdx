@@ -35,7 +35,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?f
   </Tabs.Tab>
 
   <Tabs.Tab>
-    ```jsx
+    ```jsx {2, 16, 22}
     function Accordion(props: Props) {
       const { slot } = useSlot(props.children);
       // Not a part of this library. Helps component accept both isOpen and defaultIsOpen
@@ -65,7 +65,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?f
     ```
   </Tabs.Tab>
   <Tabs.Tab>
-    ```jsx
+    ```jsx {2, 12, 33}
     function AccordionList(props: Props) {
       const { slot } = useSlot(props.children);
       // Not a part of this library. Helps component accept both isOpen and defaultIsOpen
@@ -78,6 +78,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?f
       return (
         <div className="accordion-list">
           <slot.default>
+            {/* Override Accordion props when used inside AccordionList */}
             <OverrideNode
               allowedNodes={[Accordion]}
               enforce="ignore"
@@ -132,9 +133,9 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
   </Tabs.Tab>
 
   <Tabs.Tab>
-    ```jsx
+    ```jsx {3, 7, 8, 10, 21, 22, 32}
     function Dialog(props: Props) {
-      const { close, titleId } = useDialogTriggerContext() || {};
+      const { close } = useDialogTriggerContext() || {};
       const { slot } = useSlot(props.children);
 
       return (
@@ -143,6 +144,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
           <slot.content />
           <div className="dialog__actions">
             <slot.secondary>
+              {/* Allow Button and DialogTrigger, but override Button to have default props */}
               <OverrideNode allowedNodes={[Button, DialogTrigger]} />
               <OverrideNode
                 allowedNodes={[Button]}
@@ -172,7 +174,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
   </Tabs.Tab>
 
   <Tabs.Tab>
-    ```jsx
+    ```jsx {2, 13, 26, 29}
     function DialogTrigger(props: Props) {
       const { slot } = useSlot(props.children);
       // Not a part of this library. Helps component accept both isOpen and defaultIsOpen
@@ -186,6 +188,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
       return (
         <>
           <slot.default>
+            {/* Override Button to open dialog by default */}
             <OverrideNode
               allowedNodes={[Button]}
               props={{
@@ -194,10 +197,11 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
                 }),
               }}
             >
+              {/* Fallback Button if not specified */}
               <Button>Trigger It!</Button>
             </OverrideNode>
           </slot.default>
-          <DialogTriggerContextProvider close={close} titleId={DIALOG_TITLE_ID}>
+          <DialogTriggerContextProvider close={close}>
             <Modal isOpen={!!isOpen} onRequestClose={close}>
               <slot.dialog />
             </Modal>

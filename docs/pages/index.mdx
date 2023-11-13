@@ -4,15 +4,464 @@ import { Tabs, Callout } from "nextra/components";
 
 `react-slots` empowers you to prioritize composability in your component APIs.
 
-The core of `react-slots` is the slot pattern. It's designed to provide all the features you'd find in Vue and Svelte's slot implementations while keeping things familiar for React developers. This slot pattern, complemented by **great type inference features** and an **intuitive API for manipulating nodes**, allows you to design highly composable components with previously unimagined patterns in React.
+The core of `react-slots` is the slot pattern. It's designed to provide all the
+features you'd find in Vue and Svelte's slot implementations while keeping
+things familiar for React developers. This slot pattern, complemented by **great
+type inference features** and an **intuitive API for manipulating nodes**,
+allows you to design highly composable components with previously unimagined
+patterns in React.
 
-## Examples
+## How it works
 
-The code samples below represent actual implementations. No need to define external state or event handlers for these components to function.
+You can access the slot magic with the `useSlot` hook. `useSlot` takes in the
+children and returns a `slot` object for this component. `slot` is a dynamic
+object, where any key gives you access to corresponding parent-provided content.
+Values on the `slot` object can be used as a React element, providing a nice
+syntax to specify fallback content and a place to define props that you can pass
+up to the parent.
+
+Consider the `ListItem` component. It has slots for the **title**,
+**description**, and **thumbnail**. It's implemented to hide large descriptions
+by default but has the ability to expand when clicked. Since it handles
+expanding logic on its own, we might benefit from passing the `isOpen` prop up,
+allowing the parent to access it for any custom logic. To enhance usability, we
+will make the description a **default** slot, meaning any unspecified slot
+content will end up in the description **implicitly**.
+
+```jsx
+import { useSlot } from "@beqa/react-slots";
+
+function ListItem({ children }) {
+  const { slot } = useSlot(children);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <li
+      className={`${isExpanded ? "expanded" : "collapsed"}`}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      {/* Render thumbnail if provided, otherwise nothing*/}
+      <slot.thumbnail />
+      <div>
+        {/* Render a fallback if title is not provided*/}
+        <slot.title>Expand for more</slot.title>
+        {/* Render the description and pass the prop up to the parent */}
+        <slot.default isExpanded={isExpanded} />
+      </div>
+    </li>
+  );
+}
+```
+
+To draw a parallel with the "Render Props" pattern, similar logic would be
+implemented like this with plain props:
+
+```jsx
+function render(prop, fallback, passUpProps) {
+  if (typeof prop === "function") {
+    return prop(passUpProps || {});
+  } else if (prop === undefined || prop === null) {
+    return fallback;
+  }
+  return prop;
+}
+
+function ListItem({ children, title, thumbnail }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <li
+      className={`${isExpanded ? "expanded" : "collapsed"}`}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      {render(thumbnail, null)}
+      <div>
+        {render(title, "Expand for more")}
+        {render(children, null, { isExpanded })}
+      </div>
+    </li>
+  );
+}
+```
+
+### Specifying Slot Content From the Parent
+
+There are **three ways** to specify slot content from the parent, one of which
+is **100% type-safe** (We'll explore the type-safe way in the dedicated
+type-safety section on this page). One way to specify slot content is by
+including a `slot-name` attribute on any element or component with a value
+corresponding to the available slot for the component. The other way is by using
+a template. A template is a special object, similar to a slot, where values are
+React elements that correspond to the slot with the same name. They are superior
+to `slot-name` because:
+
+- You can provide primitives to a slot without having to wrap them in an
+  arbitrary element.
+- They can access props that are passed up by corresponding slots.
+
+<Tabs items={["With slot-name", "With a template"]}>
+  <Tabs.Tab>
+
+    ```jsx
+    <ListItem>
+      <img slot-name="thumbnail" src="..." />
+      <div slot-name="title">A title</div>
+      this is a description
+    </ListItem>;
+    ```
+
+  </Tabs.Tab>
+
+  <Tabs.Tab>
+
+    ```jsx
+    import { template } from "beqa/react-slots";
+
+    <ListItem>
+      <template.thumbnail><img src=".." /></template.thumbnail>
+      <template.title>A title</template.title>
+      <template.description>
+        {({ isExpanded }) => isExpanded ? <strong>A description</strong> : "A description" }
+      </template.description>
+      <template.description>
+        doesn't have to be a function
+      </template.description>
+    </ListItem>
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+## Why Not Just Use Props?
+
+To be clear, this pattern doesn't prohibit the use of render props. You can have
+both in the same component to provide a rich API for your components.
+
+The problem with using render props in this manner is that it restricts
+composability. There might initially not be a problem with the abstraction
+created using the render props pattern, but that abstraction usually breaks when
+you introduce the **second or third layer of composition**.
+
+### Composition with Render Props
+
+To illustrate the problem, let's see how we would expand on the `ListItem`
+component to abstract away common logic that might arise from using `ListItem`
+elements often. Since we usually render `ListItem` in a list where we like to
+keep only one `ListItem` expanded at once, we can make a `SingleExpandList`
+component.
+
+We'll have to change the implementation of `ListItem` to accept the `isExpanded`
+prop. Since we don't want to break the existing logic that assumes that
+`ListItem` doesn't require the `isExpanded` prop, we can use a
+`useControlledState` hook. There are many implementations of this hook, one of
+which can be found here:
+[useControlledState by niekert](https://github.com/niekert/use-controlled-state)
+
+```jsx
+function ListItem({ children, title, thumbnail, isExpanded, onExpand }) {
+  const [_isExpanded, setIsExpanded] = useControlledState(isExpanded, onExpand);
+
+  return (
+    // Everything else remains the same
+  );
+}
+```
+
+A typical way to implement `SingleExpandList` using `ListItem` is as follows:
+
+```tsx
+type Props = {
+  items: {
+    title: React.ReactNode;
+    thumbnail: React.ReactNode;
+    description: (({ isExpanded }) => React.ReactNode) | React.ReactNode;
+    id: string;
+  }[];
+  onExpand: (expandedId) => void;
+  expandedId: string;
+};
+
+function SingleExpandList({ items, expandedId, onExpand }) {
+  const [_expandedId, setExpandedId] = useControlledState(expandedId, onExpand);
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <ListItem
+          isExpanded={_expandedId === item.id}
+          onExpand={() => onExpand(_expandedId)}
+          title={item.title}
+          thumbnail={item.thumbnail}
+        >
+          {item.description}
+        </ListItem>
+      ))}
+    </ul>
+  );
+}
+```
+
+While this component accomplishes its job, all the benefits of composability are
+lost at this point.
+
+- What if you want to add a divider between the second and third items?
+- What if the first `ListItem` needs to be styled differently?
+- What if the fourth `ListItem` needs to be always open?
+
+### Composition with Slots
+
+`react-slots` addresses this issue with the `OverrideNode` element. While the
+name may sound intimidating, it's actually an easy and **type-safe** way to
+define strict relationships between composed elements. You start by including
+`<OverrideNode />` as a direct child of the slot element. You may use one or
+many `OverrideNode`'s per slot, and depending on whether you wrap the fallback
+with `OverrideNode`, the override will apply to the fallback as well.
+
+```jsx
+import { OverrideNode, useSlot } from "@beqa/react-slots";
+
+function SingleExpandList({ children, expandedId, onExpand }) {
+  const { slot } = useSlot(children);
+  const [_expandedId, setExpandedId] = useControlledState(expandedId, onExpand);
+
+  return (
+    <ul>
+      <slot.default>
+        <OverrideNode
+          allowedNodes={[ListItem]}
+          enforce="ignore" // Override ListItem, Keep everything else intact
+          props={(props, el) => {
+            if (!props.id) {
+              console.error(
+                "When using SingleExpandList, each ListItem should have a unique id",
+              );
+            }
+
+            return {
+              // Override isExpanded on ListItem to be controlled by SingleExpandList
+              isExpanded: _expandedId === el.id,
+              // Call this component's onExpand through useControlledState when the event fires
+              onExpand(nextIsExpanded) {
+                if (nextIsExpanded) {
+                  setExpandedId(el.id);
+                } else if (!nextIsExpanded && el.id === _expandedId) {
+                  setExpandedId(null);
+                }
+                // Also execute the original onExpand on the ListItem
+                if (props.onExpand) {
+                  props.onExpand(nextIsExpanded);
+                }
+              },
+            };
+          }}
+        />
+      </slot.default>
+    </ul>
+  );
+}
+```
+
+Since we are overriding default slot content, `OverrideNode` will apply to every
+top-level child of `SingleExpandList`.
+
+#### Usage
+
+<Tabs items={["Static List", "Dynamic List", "Dividers Inside Dynamic List"]}>
+  <Tabs.Tab >
+
+    ```jsx
+    <SingleExpandList>
+      <ListItem id={1}>
+        <img slot-name="thumbnail" src=".." />
+        <div slot-name="title">A title</div>
+        this is a description
+      </ListItem>
+      <ListItem id={2}>
+        <img slot-name="thumbnail" src=".." />
+        <div slot-name="title">Second title</div>
+        Second description
+      </ListItem>
+    </SingleExpandList>
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab >
+
+    ```jsx
+    <SingleExpandList>
+      {getListItems().map((item) => (
+        <ListItem key={item.id} id={item.id}>
+          <img slot-name="thumbnail" src={item.thumbnail} />
+          <div slot-name="title">{item.title}</div>
+          {item.description}
+        </ListItem>
+      ))}
+    </SingleExpandList>
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab >
+
+    ```jsx
+    <SingleExpandList>
+      {getListItems().map((item, i) => (
+        <template.default key={item.id}>
+          {i % 3 === 0 && <li className="divider" />}
+          <ListItem id={item.id}>
+            <img slot-name="thumbnail" src={item.thumbnail} />
+            <div slot-name="title">{item.title}</div>
+            {item.description}
+          </ListItem>
+        </template.default>
+      ))}
+    </SingleExpandList>
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+<Callout type="info">
+  `OverrideNode` API is explained in detail in sections from [Manipulating Slot
+  Content](/tutorial/manipulating-slot-content) to [Node
+  Prop](/tutorial/node-prop) in the tutorial
+</Callout>
+
+## Type-Safety
+
+`react-slots` is designed to provide a great developer experience by allowing
+you to write less TypeScript to infer more. The source of truth in `react-slots`
+comes from two types: `SlotChildren` and `Slot`, which are used to annotate your
+`children`. The API of `Slot` and `SlotChildren` is explained in detail in the
+type-safety section of the tutorial.
+
+To begin, let's make our `ListItem` and `SingleExpandList` type-safe:
+
+```tsx
+import { Slot, SlotChildren, ... } from "@beqa/react-slots";
+
+type ListItemProps = {
+	children: SlotChildren<
+		| Slot<"title"> // Shorthand of Slot<"title", {}>
+		| Slot<"thumbnail"> // Shorthand of Slot<"thumbnail", {}>
+		| Slot<{ isExpanded: boolean }> // Shorthand of Slot<"default", {}>
+	>,
+	isExpanded: boolean,
+	onExpand: (nextIsExpanded: boolean) => void,
+	id: string;
+};
+
+function ListItem({ children, isExpanded, onExpand, id }: ListItemProps) {
+	const { slot } = useSlot(children); // Returns type-safe slot with correct keys and assignable props
+	// implementation remains the same
+}
+
+type SingleExpandListProps = {
+	children: SlotChildren<Slot>; // Has only default slot with no passed-up props
+	expandedId: string,
+	onExpand: (nextExpandedId: string) => void;
+};
+
+function SingleExpandList({ children, expandedId, onExpand }: SingleExpandListProps) {
+	const { slot } = useSlot(children); // Returns type-safe slot that has only "default" key
+	// implementation remains the same
+}
+
+```
+
+The syntax of `SlotChildren` and `Slot` types is designed to be easy to read at
+a glance, so you won't have to wonder if a component in your codebase uses slots
+or not. There's also a
+[handy trick](/recommendations#better-ide-experience-with-typescript) to make
+component slots visible by hovering on a component without going to a file.
+
+Please note that we don't have to change `OverrideNode` in any way because it's
+type-safe by default. Its type is inferred from the array you pass to
+`allowedNodes`. This means you can define complex override logic, and you'll get
+a type error if the element you are overriding changes its implementation. **The
+downside of `OverrideNode` itself is that it cannot enforce the type of allowed
+nodes on the type level; instead, a run-time error is thrown by default when the
+parent provides the wrong type of node.**
+
+To make parents type-safe, all you have to do is use type-safe templates. You
+can create type-safe templates with either the `CreateTemplate` type or a
+`createTemplate` function, for which you have to provide the original children
+type.
+
+```tsx
+// Option #1
+import { createTemplate } from "@beqa/react-slots";
+const template = createTemplate<ListItemProps["children"]>();
+
+// Option #2
+import { template, CreateTemplate } from "@beqa/react-slots";
+const template = template as CreateTemplate<ListItemProps["children"]>;
+
+// Typo-free and auto-complete for props!
+<ListItem>
+  <template.thumbnail>
+    <img src=".." />
+  </template.thumbnail>
+  <template.title>A title</template.title>
+  <template.description>
+    {({ isExpanded }) =>
+      isExpanded ? <strong>A description</strong> : "A description"
+    }
+  </template.description>
+  <template.description>doesn't have to be a function</template.description>
+</ListItem>;
+```
+
+**Typescript can't enforce that the `slot-name` attribute is correct**, so it's
+recommended not to use the `slot-name` attribute **until your component API is
+stable**. Alternatively, you need to be careful when changing slot names during
+refactoring. Please note that if the parent provides a wrong `slot-name`, the
+element won't be rendered, and the user will see the fallback instead.
+
+<Callout type="info">
+  `Slot`, `SlotChildren`, and `CreateTemplate` APIs are explained in detail in
+  the [Type-Safety](/tutorial/type-safety) section of the tutorial.
+</Callout>
+
+## What is `react-slots` for
+
+The slot pattern works best for utility components within your design system.
+These components don't assume any specific shape of data and work with
+primitives as much as possible. You can think of `react-slots` as a way to
+"extend" the standard HTML element API.
+
+`react-slots` might be the missing piece you're looking for if:
+
+- You are building a design system from scratch.
+- Your reusable components eventually start to have a giant list of props, with
+  which the parent has to control every aspect of abstracted logic.
+- You are looking for a nice way to maintain the hierarchy of headlines while
+  being able to correctly style your titles.
+- You are looking for a way to abstract away handling ARIA attributes.
+
+## Caveats
+
+`react-slots` "steals" the children by requiring its shape to be specific to
+`react-slots`. This means you can only use the children inside the component to
+provide it to `useSlot`. All of `React.Children` APIs cannot meaningfully work
+with slotted component children. Instead, `react-slots` exposes `OverrideNode`
+to replace almost all the use cases for `React.Children` APIs.
+
+There's also some "quirkiness" to slotted component children that's documented
+here:
+
+- [Caveat: Slot Content Keys](/caveats#slot-content-keys)
+- [Caveat: Template as Custom Component Footgun](/caveats#template-as-custom-component-footgun)
+
+## Advanced Examples
+
+This examples are meant to demonstrate how to create flexible component APIs
+with composition. Checkout live examples to see all the different ways to use
+these components.
 
 ### Creating highly composable `Accordion` and `AccordionList` components using react-slots
 
-Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?file=pages%2Findex.tsx)
+Checkout
+[live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?file=pages%2Findex.tsx)
 
 <Tabs items={["Usage", "Accordion.tsx", "AccordionList.tsx"]}>
   <Tabs.Tab>
@@ -63,6 +512,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?f
       );
     }
     ```
+
   </Tabs.Tab>
   <Tabs.Tab>
     ```jsx {2, 12, 33}
@@ -103,12 +553,14 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?f
       );
     }
     ```
+
   </Tabs.Tab>
 </Tabs>
 
 ### Creating highly composable `Dialog` and `DialogTrigger` components using react-slots
 
-Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?file=pages%2Findex.tsx)
+Checkout
+[live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?file=pages%2Findex.tsx)
 
 <Tabs items={["Usage", "Dialog.tsx", "DialogTrigger.tsx"]}>
   <Tabs.Tab>
@@ -171,6 +623,7 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
       );
     }
     ```
+
   </Tabs.Tab>
 
   <Tabs.Tab>
@@ -210,9 +663,11 @@ Checkout [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?f
       );
     }
     ```
+
   </Tabs.Tab>
 </Tabs>
 
 <Callout emoji="⭐">
-  If you like this project please show support by starring it on [Github](https://github.com/Flammae/react-slots)
+  If you like this project please show support by starring it on
+  [Github](https://github.com/Flammae/react-slots)
 </Callout>

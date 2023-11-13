@@ -1,5 +1,5 @@
 # Ignore artifacts:
 build
 fixtures
-# A bug when using code block inside tab elements
-docs/pages/index.mdx 
+# # A bug when using code block inside tab elements
+# docs/pages/index.mdx  

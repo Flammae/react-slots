@@ -21,37 +21,3 @@ occurs, you can add the following comment at the beginning of the file:
 
 After adding this comment, you should only use the function signature of slots
 in that file.
-
-https://react-slots-docs.vercel.app/
-
-Hey there! Just wanted to drop a link to this cool React library I've been tinkering with for the past year: beqa/react-slots. It's all about that slot pattern magic, inspired by Vue and Svelte, and it's 100% type-safe – just the way we like it. :rocket:
-
-Check it out, and I bet you'll stumble upon some fresh patterns you haven't thought about. Here's a snippet that's maybe my favorite:
-
-```jsx
-function Edit({ children, enabled }) {
-  const { slot } = useSlot(children);
-
-  return (
-    <slot.default>
-      <OverrideNode 
-	props={(props) => ({
-	  contenteditable: (enabled && props["data-editable"]) ? "true" : "false" 
-	})}
-      >
-	<div data-editable>{enabled && "Start editing me"}</div>
-			</OverrideNode>
-		</slot.default>
-	)
-}
-
-// Usage
-<Edit enabled>
-  <div data-editable>You can edit me</div>
-  <div>You can't edit me</div>
-  Can't edit me either
-</Edit>;
-
-// This is also editable because of the fallback content
-<Edit enabled /> 
-```

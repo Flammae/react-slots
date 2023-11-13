@@ -54,38 +54,7 @@ function Heading({ level, children }) {
   be used for the template's `as` prop.
 </Callout>
 
-## Caution: Template as Custom Component Footgun
-
-When you specify a custom component with the template element's `as` prop, you
-must exercise caution. This is because the `children` you specify for the
-template element won't be the same `children` that will be passed to the `as`
-element. `react-slots` is likely to modify the `children` in a way that's
-significantly different from what you might expect. This is especially true when
-`OverrideNode` is used within the slot. For this reason, the `as` element's
-`children` must be of type `ReactNode` and should only be used within the `as`
-element for the purpose of rendering.
-
-```tsx
-function MyComponent({ children }: { children: string }) {
-  performSideEffect(children);
-  return <div>{children}</div>;
-}
-// ❌ Not Allowed: MyComponent expects a string to perform a side effect with.
-// The provided node will likely not be a string.
-<template.foo as={MyComponent}>Content</template.foo>;
-
-function MySecondComponent({ children }: { children: React.ReactNode }) {
-  return shouldRenderChildren ? children : "default children";
-}
-// ⚠️ Caution: MySecondComponent may or may not render children.
-<template.foo as={MySecondComponent}>Content</template.foo>;
-
-function MyThirdComponent({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>;
-}
-// ✅ Allowed: MyThirdComponent always returns unmodified children.
-<template.foo as={MyThirdComponent}>Content</template.foo>;
-```
-
-If you are using typescript, compiler won't allow you to specify a component
-whose `children` is not assignable to `ReactNode`
+<Callout type="error">
+  Be careful when providing custom components for template's as prop: [Template
+  as Custom Component Footgun](/caveats#template-as-custom-component-footgun)
+</Callout>

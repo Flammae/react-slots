@@ -1,0 +1,78 @@
+# Caveats
+
+## Slot Content Keys
+
+When `useSlot` parses `children`, it flattens the arrays. This allows it to
+correctly identify content for slots. For this reason, keys must be unique
+within the slot content, even if they are part of different arrays.
+
+```jsx
+function MyComponent({ children }) {
+	const { slot } = useSlot(children);
+	return <slot.foo />;
+}
+
+// ❌ Incorrect: Duplicate keys 1 and 2
+<MyComponent>
+	{[
+		<div key={1} slot-name="foo">First node</div>,
+		<template.foo key={2}>Second second</template.foo>
+	]}
+	{[
+		<span key={1} slot-name="foo">Third node</span>
+	]}
+	<span key={2} slot-name="foo">Fourth node</span>
+	<span slot-name="foo">Fifth node</span>
+	<span slot-name="foo">Sixth node</span>
+</MyComponent>
+
+// ✅ Correct: Keys are different.
+<MyComponent>
+	{[
+		<div key={1} slot-name="foo">First node</div>,
+		<template.foo key={2}>Second second</template.foo>
+	]}
+	{[
+		<span key={3} slot-name="foo">Third node</span>
+	]}
+	<span key={4} slot-name="foo">Fourth node</span>
+	<span slot-name="foo">Fifth node</span>
+	<span slot-name="foo">Sixth node</span>
+</MyComponent>
+```
+
+## Template as Custom Component Footgun
+
+When you specify a custom component with the template element's `as` prop, you
+must exercise caution. This is because the `children` you specify for the
+template element won't be the same `children` that will be passed to the `as`
+element. `react-slots` is likely to modify the `children` in a way that's
+significantly different from what you might expect. This is especially true when
+`OverrideNode` is used within the slot. For this reason, the `as` element's
+`children` must be of type `ReactNode` and should only be used within the `as`
+element for the purpose of rendering.
+
+```tsx
+function MyComponent({ children }: { children: string }) {
+  performSideEffect(children);
+  return <div>{children}</div>;
+}
+// ❌ Not Allowed: MyComponent expects a string to perform a side effect with.
+// The provided node will likely not be a string.
+<template.foo as={MyComponent}>Content</template.foo>;
+
+function MySecondComponent({ children }: { children: React.ReactNode }) {
+  return shouldRenderChildren ? children : "default children";
+}
+// ⚠️ Caution: MySecondComponent may or may not render children.
+<template.foo as={MySecondComponent}>Content</template.foo>;
+
+function MyThirdComponent({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
+}
+// ✅ Allowed: MyThirdComponent always returns unmodified children.
+<template.foo as={MyThirdComponent}>Content</template.foo>;
+```
+
+If you are using typescript, compiler won't allow you to specify a component
+whose `children` is not assignable to `ReactNode`

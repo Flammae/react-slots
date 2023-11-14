@@ -153,8 +153,9 @@ component.
 We'll have to change the implementation of `ListItem` to accept the `isExpanded`
 prop. Since we don't want to break the existing logic that assumes that
 `ListItem` doesn't require the `isExpanded` prop, we can use a
-`useControlledState` hook. There are many implementations of this hook, one of
-which can be found here:
+`useControlledState` hook. `useControlledState` makes it possible for state to
+be **both controlled and uncontrolled**. There are many implementations of this
+hook, one of which can be found here:
 [useControlledState by niekert](https://github.com/niekert/use-controlled-state)
 
 ```jsx
@@ -230,7 +231,7 @@ function SingleExpandList({ children, expandedId, onExpand }) {
         <OverrideNode
           allowedNodes={[ListItem]}
           enforce="ignore" // Override ListItem, Keep everything else intact
-          props={(props, el) => {
+          props={(props) => {
             if (!props.id) {
               console.error(
                 "When using SingleExpandList, each ListItem should have a unique id",
@@ -272,12 +273,12 @@ top-level child of `SingleExpandList`.
     ```jsx
     <SingleExpandList>
       <ListItem id={1}>
-        <img slot-name="thumbnail" src=".." />
+        <img slot-name="thumbnail" src="..." />
         <div slot-name="title">A title</div>
         this is a description
       </ListItem>
       <ListItem id={2}>
-        <img slot-name="thumbnail" src=".." />
+        <img slot-name="thumbnail" src="..." />
         <div slot-name="title">Second title</div>
         Second description
       </ListItem>
@@ -343,10 +344,10 @@ type ListItemProps = {
 	children: SlotChildren<
 		| Slot<"title"> // Shorthand of Slot<"title", {}>
 		| Slot<"thumbnail"> // Shorthand of Slot<"thumbnail", {}>
-		| Slot<{ isExpanded: boolean }> // Shorthand of Slot<"default", {}>
-	>,
-	isExpanded: boolean,
-	onExpand: (nextIsExpanded: boolean) => void,
+		| Slot<{ isExpanded: boolean }> // Shorthand of Slot<"default", {isExpanded: boolean}>
+	>;
+	isExpanded: boolean;
+	onExpand: (nextIsExpanded: boolean) => void;
 	id: string;
 };
 
@@ -357,7 +358,7 @@ function ListItem({ children, isExpanded, onExpand, id }: ListItemProps) {
 
 type SingleExpandListProps = {
 	children: SlotChildren<Slot>; // Has only default slot with no passed-up props
-	expandedId: string,
+	expandedId: string;
 	onExpand: (nextExpandedId: string) => void;
 };
 
@@ -399,7 +400,7 @@ const template = template as CreateTemplate<ListItemProps["children"]>;
 // Typo-free and auto-complete for props!
 <ListItem>
   <template.thumbnail>
-    <img src=".." />
+    <img src="..." />
   </template.thumbnail>
   <template.title>A title</template.title>
   <template.description>

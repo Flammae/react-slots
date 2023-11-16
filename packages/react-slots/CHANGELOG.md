@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 1.0.2
+
+### Patch Changes
+
+- Added Examples for the README
+
 ## 1.0.1
 
 ### Patch Changes

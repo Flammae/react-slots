@@ -18,18 +18,18 @@
 You can find the docs on the
 [docs website](https://react-slots-docs.vercel.app/)
 
-## Simple Example: Implementing
+## Implementing
 
-```jsx
+```tsx
 import { useSlot, SlotChildren, Slot } from "@beqa/react-slots";
 
 type ListItemProps = {
   children: SlotChildren<
-		| Slot<"title"> // Shorthand of Slot<"title", {}>
-		| Slot<"thumbnail"> // Shorthand of Slot<"thumbnail", {}>
-		| Slot<{ isExpanded: boolean }> // Shorthand of Slot<"default", {isExpanded: boolean}>
-	>;
-}
+    | Slot<"title"> // Shorthand of Slot<"title", {}>
+    | Slot<"thumbnail"> // Shorthand of Slot<"thumbnail", {}>
+    | Slot<{ isExpanded: boolean }> // Shorthand of Slot<"default", {isExpanded: boolean}>
+  >;
+};
 
 function ListItem({ children }: ListItemProps) {
   const { slot } = useSlot(children);
@@ -53,9 +53,9 @@ function ListItem({ children }: ListItemProps) {
 }
 ```
 
-## Simple Example: Specifying Slot Content From the Parent
+## Specifying Slot Content From the Parent
 
-### With `slot-name` Attribute
+With `slot-name` attribute
 
 ```jsx
 <ListItem>
@@ -65,7 +65,7 @@ function ListItem({ children }: ListItemProps) {
 </ListItem>
 ```
 
-### With Templates
+With Templates
 
 ```jsx
 import { template } from "beqa/react-slots";
@@ -84,7 +84,7 @@ import { template } from "beqa/react-slots";
 </ListItem>;
 ```
 
-### With Type-safe Templates
+With type-safe templates
 
 ```tsx
 // Option #1
@@ -115,7 +115,7 @@ const template = template as CreateTemplate<ListItemProps["children"]>;
 | The code samples below represent actual implementations. No need to define external state or event handlers for these components to function. |
 | --------------------------------------------------------------------------------------------------------------------------------------------- |
 
-#### Creating highly composable `Accordion` and `AccordionList` components using react-slots
+### Creating highly composable `Accordion` and `AccordionList` components using react-slots
 
 Checkout
 [live example](https://stackblitz.com/edit/stackblitz-starters-tq32ef?file=pages%2Findex.tsx)
@@ -137,7 +137,7 @@ Checkout
 </AccordionList>
 ```
 
-#### Creating highly composable `Dialog` and `DialogTrigger` components using react-slots
+### Creating highly composable `Dialog` and `DialogTrigger` components using react-slots
 
 Checkout
 [live example](https://stackblitz.com/edit/stackblitz-starters-fa5wbe?file=pages%2Findex.tsx)

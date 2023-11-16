@@ -11,13 +11,106 @@
 - Intuitive API
 - Self-documenting with typescript
 - Elegant solution to a11y attributes
+- Inversion of control
 
 ## Docs
 
 You can find the docs on the
 [docs website](https://react-slots-docs.vercel.app/)
 
-## Examples
+## Simple Example: Implementing
+
+```jsx
+import { useSlot, SlotChildren, Slot } from "@beqa/react-slots";
+
+type ListItemProps = {
+  children: SlotChildren<
+		| Slot<"title"> // Shorthand of Slot<"title", {}>
+		| Slot<"thumbnail"> // Shorthand of Slot<"thumbnail", {}>
+		| Slot<{ isExpanded: boolean }> // Shorthand of Slot<"default", {isExpanded: boolean}>
+	>;
+}
+
+function ListItem({ children }: ListItemProps) {
+  const { slot } = useSlot(children);
+  const [isExpanded, setIsExpanded] = useState();
+
+  return (
+    <li
+      className={`${isExpanded ? "expanded" : "collapsed"}`}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      {/* Render thumbnail if provided, otherwise nothing*/}
+      <slot.thumbnail />
+      <div>
+        {/* Render a fallback if title is not provided*/}
+        <slot.title>Expand for more</slot.title>
+        {/* Render the description and pass the prop up to the parent */}
+        <slot.default isExpanded={isExpanded} />
+      </div>
+    </li>
+  );
+}
+```
+
+## Simple Example: Specifying Slot Content From the Parent
+
+### With `slot-name` Attribute
+
+```jsx
+<ListItem>
+  <img slot-name="thumbnail" src="..." />
+  <div slot-name="title">A title</div>
+  this is a description
+</ListItem>
+```
+
+### With Templates
+
+```jsx
+import { template } from "beqa/react-slots";
+
+<ListItem>
+  <template.thumbnail>
+    <img src=".." />
+  </template.thumbnail>
+  <template.title>A title</template.title>
+  <template.description>
+    {({ isExpanded }) =>
+      isExpanded ? <strong>A description</strong> : "A description"
+    }
+  </template.description>
+  <template.description>doesn't have to be a function</template.description>
+</ListItem>;
+```
+
+### With Type-safe Templates
+
+```tsx
+// Option #1
+import { createTemplate } from "@beqa/react-slots";
+const template = createTemplate<ListItemProps["children"]>();
+
+// Option #2
+import { template, CreateTemplate } from "@beqa/react-slots";
+const template = template as CreateTemplate<ListItemProps["children"]>;
+
+// Typo-free and auto-complete for props!
+<ListItem>
+  <template.thumbnail>
+    <img src="..." />
+  </template.thumbnail>
+  <template.title>A title</template.title>
+  <template.description>
+    {({ isExpanded }) =>
+      isExpanded ? <strong>A description</strong> : "A description"
+    }
+  </template.description>
+  <template.description>doesn't have to be a function</template.description>
+</ListItem>;
+```
+
+## Advanced Examples
 
 | The code samples below represent actual implementations. No need to define external state or event handlers for these components to function. |
 | --------------------------------------------------------------------------------------------------------------------------------------------- |

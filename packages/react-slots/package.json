@@ -1,7 +1,7 @@
 {
   "name": "@beqa/react-slots",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "The react-slots runtime library",
   "author": "Beqa",
   "license": "MIT",

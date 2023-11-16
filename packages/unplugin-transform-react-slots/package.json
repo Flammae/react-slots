@@ -1,6 +1,6 @@
 {
   "name": "@beqa/unplugin-transform-react-slots",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JSX to slot function transpilation plugin for some of the common build systems",
   "author": "Beqa",
   "license": "MIT",

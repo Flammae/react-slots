@@ -2,6 +2,16 @@
 
 `react-slots` empowers you to prioritize composability in your component APIs.
 
+## Featuring
+
+- Composability with ease
+- Type-safety
+- Server Components support
+- Not implemented with context
+- Intuitive API
+- Self-documenting with typescript
+- Elegant solution to a11y attributes
+
 ## Docs
 
 You can find the docs on the

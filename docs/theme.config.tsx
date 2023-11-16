@@ -32,7 +32,7 @@ const config: DocsThemeConfig = {
   chat: {
     link: "https://discord.gg/ckQxGwWv",
   },
-  docsRepositoryBase: "https://github.com/Flammae/react-slots/docs",
+  docsRepositoryBase: "https://github.com/Flammae/react-slots/tree/main/docs",
   head: () => {
     return (
       <link

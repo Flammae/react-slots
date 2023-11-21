@@ -12,23 +12,27 @@ import { Callout } from "nextra/components";
 
 # The Slot Pattern
 
-The slot pattern allows you to divide parent-provided content and tell a
-component where to render each "part". In a typical React component, this is
-achieved using 'render props'. Components receive different parts of content as
-props and render each one in their specified slots.
+The slot pattern enables you to break down parent-provided content into multiple
+parts and instruct a component on where to render each part by placing slots.
 
-For instance your typical `Button` component might accept `children`,
-`leftIcon`, and `rightIcon` props, and if provided, render them in their
-pre-determined places. With `react-slots`, you no longer need specific props to
-define slot content; everything is managed through `children`.
+In a typical React component, this is accomplished using 'render props.'
+Components receive different parts of content as props and render each one in
+their specified slots. For instance, a typical `Button` component might accept
+**children**, **leftIcon**, and **rightIcon** props, rendering them in their
+predetermined places if provided.
 
-## Writing Your First Slotted Component
+With `react-slots`, we don't use props to define slot content; everything is
+managed through `children`.
 
-To begin using slots, you'll employ the `useSlot` hook. It only requires the
-`children` argument and returns the `slot` object. The keys in the slot object
-represent the names of the slots intended for use within the component.
+## Writing Slotted Components
 
-Let's implement `Button` component using `react-slots`:
+To begin placing slots, you need to use the `useSlot` hook. `useSlot` takes in
+the children and returns a `slot` object for this component. `slot` is a dynamic
+object, where any key gives you access to corresponding parent-provided content.
+Values on the `slot` object are just like any other React element. You can place
+these elements wherever you want inside the component.
+
+Let's implement the `Button` component using `react-slots`:
 
 ```jsx
 import { useSlot } from "@beqa/react-slots";
@@ -38,27 +42,33 @@ function Button({ children, onClick }) {
 
   return (
     <button onClick={onClick}>
-      <slot.leftIcon />
-      <span>
-        <slot.default />
+      <span className="left">
+        <slot.leftIcon />
       </span>
-      <slot.rightIcon />
+      <slot.default />
+      <span className="right">
+        <slot.rightIcon />
+      </span>
     </button>
   );
 }
 ```
 
+Here, you can see that we divided the children into three parts: `leftIcon`,
+`rightIcon`, and `default`. This means the parent now has to somehow specify
+contents for each of these to replace the slots inside the component.
+
 ## Using Slotted Components
 
 When passing children to this component, you need a way to designate which
-elements are for the `leftIcon` and `rightIcon` slots. You achieve this by
-adding a `slot-name` attribute to any element or component passed to the
+elements are for the `leftIcon`, `rightIcon`, and `default` slots. You achieve
+this by adding a `slot-name` attribute to any element or component passed to the
 `Button` as children (note: elements marked with `slot-name` must be direct
-children of the `Button`). **The `default` slot is special, because any
-top-level node lacking a `slot-name` attribute automatically lands in the
-`default` slot.**
+children of the `Button`). **The `default` slot is special because any top-level
+node lacking a `slot-name` attribute automatically lands in the `default`
+slot.**
 
-Let's create a `[Add +]` button using this component:
+Let's create an "[ Add + ]" button using this component:
 
 ```jsx
 import Button from "./Button.jsx";
@@ -68,36 +78,58 @@ function SomeComponent() {
     <div>
       Add item to My collection?
       <Button>
-        Add <span slot-name="rightIcon">+</span>
+        Add
+        <span slot-name="rightIcon" className="my-plus-icon">
+          +
+        </span>
       </Button>
     </div>
   );
 }
 ```
 
-Rendered HTML from this component will look like this:
+The rendered HTML from this component will look like this:
 
-```html
+```jsx
 <div>
+  Add item to My collection?
   <button>
-    <span>Add</span>
-    <span>+</span>
+    <span class="right" />
+    Add
+    <span class="right">
+      <span class="my-plus-icon"> + </span>
+    </span>
   </button>
 </div>
 ```
 
-In a real-world app, the `rightIcon` would likely involve an `Icon` component
-instead of a simple span. Note that `leftIcon` won't render anything because it
-wasn't specified by the parent.
+As you can see, some interesting things have happened here:
 
-## TL;DR
+- The slot for `leftIcon` didn't render anything because it wasn't specified by
+  the parent.
+- The slot for `rightIcon` rendered the parent's `span` and removed the
+  `slot-name` attribute from the final HTML output.
+- The default slot rendered a string "Add" implicitly because it did not have
+  the "slot-name" attribute.
 
-- The `useSlot` hook converts component children into slottable content.
-- Keys in the `slot` object (returned from `useSlot`) represent slot names and
-  can be placed anywhere within the component.
-- A Parent can designate elements for each slot by adding a `slot-name`
-  attribute.
-- The `slot-name` attribute can only be applied to elements and components that
-  are direct children of slotted components (doesn't work on nested elements).
-- Nodes without a `slot-name` attribute automatically go into the `default`
-  slot.
+<Callout type="info">
+  There are two more ways to specify slot content from the parent which are
+  explored in detail in their dedicated sections:
+  [Templates](/tutorial/templates), [Type-safe
+  templates](/tutorial/type-safety/#the-createtemplate-type)
+</Callout>
+
+## Why not just use props?
+
+- Slots offer a convenient syntactic sugar for providing fallbacks and passing
+  the props up.
+- `react-slots` draws inspiration from
+  [Web components](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot),
+  which is HTML's proposed standard for creating HTML-like elements. With
+  `react-slots`, you can design components that function similarly to native
+  HTML elements.
+- By enforcing the restriction that `children` is for specifying content and
+  props are for modifying content, `react-slots` allows you to grant parents the
+  freedom to specify free-form content and own their own markup. Simultaneously,
+  it enables you to enforce strict relationships for composed elements with
+  [OverrideNode](/tutorial/manipulating-slot-content).

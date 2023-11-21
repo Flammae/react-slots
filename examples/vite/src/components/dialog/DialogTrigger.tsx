@@ -38,16 +38,10 @@ export function DialogTrigger(props: Props) {
   return (
     <>
       <slot.default>
-        {/*
-         If provided element is Button -> add onClick prop;
-         If DialogTrigger -> add onToggle;
-         If no content provided -> render button 'Trigger it' as a fallback;
-         Otherwise throw an error;
-        */}
-        <OverrideNode allowedNodes={[Button, DialogTrigger]} enforce="throw" />
+        <OverrideNode allowedNodes={[Button]} enforce="throw" />
         <OverrideNode
           allowedNodes={[Button]}
-          enforce="ignore"
+          enforce="throw"
           props={{
             onClick: OverrideNode.chainAfter(() => {
               setIsOpen(!isOpen);

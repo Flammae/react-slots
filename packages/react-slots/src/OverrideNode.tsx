@@ -255,27 +255,31 @@ function enforce<const T>(
     case "remove":
       return null;
     case "throw":
-    default:
-      throw new Error(
-        `${
-          React.isValidElement(child)
-            ? `${
-                typeof child.type === "function"
-                  ? (child.type as any).displayName || child.type.name
-                  : child.type
-              } element`
-            : typeof child
-        } is not a valid node type for the '${slotName}' slot. Allowed nodes are: ${allowedNodes.map(
-          (n) =>
-            n === String
-              ? "string literal"
-              : n === Number
-              ? "number literal"
-              : typeof n === "function"
-              ? (n as any).displayName || n.name
-              : n,
-        )}`,
-      );
+    default: {
+      const error = `${
+        React.isValidElement(child)
+          ? `${
+              typeof child.type === "function"
+                ? (child.type as any).displayName || child.type.name
+                : child.type
+            } element`
+          : typeof child
+      } is not a valid node type for the '${slotName}' slot. Allowed nodes are: ${allowedNodes.map(
+        (n) =>
+          n === String
+            ? "string literal"
+            : n === Number
+            ? "number literal"
+            : typeof n === "function"
+            ? (n as any).displayName || n.name
+            : n,
+      )}`;
+      if (process.env.NODE_ENV === "production") {
+        console.error(error);
+        return null;
+      }
+      throw new Error(error);
+    }
   }
 }
 

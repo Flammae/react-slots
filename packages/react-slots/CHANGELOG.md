@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 1.1.0
+
+### Minor Changes
+
+- Changed enforce="throw" of OverrideNode to only throw in development
+
 ## 1.0.2
 
 ### Patch Changes

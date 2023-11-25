@@ -11,6 +11,24 @@ type inference features** and an **intuitive API for manipulating nodes**,
 allows you to design highly composable components with previously unimagined
 patterns in React.
 
+## What is `react-slots` for
+
+The slot pattern works best for utility components within your design system.
+These components don't depend on any specific shape of data and work with
+primitives as much as possible. You can think of `react-slots` as a way to
+"extend" the standard HTML element API.
+
+`react-slots` might be the missing piece you're looking for if:
+
+- You are building a design system from scratch.
+- Your reusable components eventually start to have a giant list of props, with
+  which the parent has to control every aspect of abstracted logic.
+- You are looking for a nice way to maintain the hierarchy of headlines while
+  being able to correctly style your titles.
+- You are looking for a way to abstract away handling ARIA attributes.
+- You keep reimplementing the same components for every project to meet the new
+  styling or functional requirements
+
 ## How it works
 
 You can access the slot magic with the `useSlot` hook. `useSlot` takes in the
@@ -422,24 +440,6 @@ element won't be rendered, and the user will see the fallback instead.
   `Slot`, `SlotChildren`, and `CreateTemplate` APIs are explained in detail in
   the [Type-Safety](/tutorial/type-safety) section of the tutorial.
 </Callout>
-
-## What is `react-slots` for
-
-The slot pattern works best for utility components within your design system.
-These components don't assume any specific shape of data and work with
-primitives as much as possible. You can think of `react-slots` as a way to
-"extend" the standard HTML element API.
-
-`react-slots` might be the missing piece you're looking for if:
-
-- You are building a design system from scratch.
-- Your reusable components eventually start to have a giant list of props, with
-  which the parent has to control every aspect of abstracted logic.
-- You are looking for a nice way to maintain the hierarchy of headlines while
-  being able to correctly style your titles.
-- You are looking for a way to abstract away handling ARIA attributes.
-- You keep reimplementing the same components for every project to meet the new
-  styling or functional requirements
 
 ## Caveats
 

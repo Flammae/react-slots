@@ -18,6 +18,11 @@
 You can find the docs on the
 [docs website](https://react-slots-docs.vercel.app/)
 
+## Discord
+
+If you need any assistance, feel free to join our
+[Discord server](https://discord.gg/HsjKhJJX)
+
 ## Implementing
 
 ```tsx

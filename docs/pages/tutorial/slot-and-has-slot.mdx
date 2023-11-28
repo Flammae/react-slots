@@ -1,39 +1,66 @@
 import { Callout } from "nextra/components";
 
-# Slot Elements and `hasSlot` object
+# Slot Elements and `hasSlot` Object
 
-Slot elements offer some convenient built-in functionality that makes them more
-appealing than typical "render props." In this section, we'll explore the
-highlights, but remember that the true power of slot elements is buried deeper
-down in the documentation.
+Slot elements come with some convenient built-in functionality. On this page,
+we'll see how `react-slots` handles common patterns when dealing with a
+slot-based architecture.
 
 ## Specifying Fallback Content:
 
-Sometimes, you want to render something in a slot even if the parent doesn't
-provide specific content. To achieve this, **simply include your fallback
-content as children of the slot element.** For example, the `listIcon` slot for
-the `BulletList` component might render `👉` as a fallback if the parent doesn't
-specify a `listIcon`.
+Sometimes, you want to render a fallback in a slot even if the parent doesn't
+provide content for that slot. To achieve this, **simply include your fallback
+content as children of the slot element.**
 
-```jsx filename="BulletList.jsx"
-<slot.listIcon>👉</slot.listIcon>
+Consider a `listIcon` slot for the `BulletList` component. We might want to
+display a fallback list icon if the parent didn't provide a unique icon for this
+slot.
+
+```jsx {9}
+function BulletList({ children, items }) {
+  const { slot } = useSlot(children);
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <li>
+          {/* This emoji will be rendered as a fallback for the listIcon slot */}
+          <slot.listIcon>👉</slot.listIcon>
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
 ```
 
-## The `hasSlot` Object
+## The hasSlot Object
 
-The `hasSlot` object has this type definition:
-`type hasSlot = {[slotName: string]: true | undefined}{:ts}`. It's an object
-with keys representing slot names specified by the parent. You can use it to
-style or structure the UI based on whether the parent provided content for a
-particular slot. You can access `hasSlot` by destructuring the `useSlot` return
-value. **For example, the `title` slot for the `Card` component might render a
-horizontal line after the card title if the title is provided:**
+`type hasSlot = {[slotName: string]: true | undefined}{:ts}`.
 
-```jsx filename="Card.jsx"
-const {slot, hasSlot} = useSlot();
-...
-<slot.title />
-{hasSlot.title && <hr />}
+hasSlot is an object with keys representing slot names specified by the parent.
+For example, if a parent provides a `foo` slot, then `hasSlot.foo` in the child
+component will be true; otherwise, undefined. You can access hasSlot by
+destructuring the useSlot return value.
+
+hasSlot is useful when you want to style or structure the UI based on whether
+the parent provided content for a particular slot.
+
+For example, the `title` slot for the Card component might render a horizontal
+line after the card title only if the title is provided:
+
+```jsx {2, 7}
+function Card() {
+  const { slot, hasSlot } = useSlot();
+
+  return (
+    <div>
+      <slot.title />
+      {hasSlot.title && <hr />}
+      ...
+    </div>
+  );
+}
 ```
 
 ## Passing State Up to a Parent
@@ -45,14 +72,16 @@ can change the text on the button based on whether the button is toggled or not.
 As a fallback, it renders "Enabled" and "Disabled" if the parent doesn't provide
 custom text.
 
-```jsx
+```jsx {8}
 function ToggleButton({ children }) {
   const { slot } = useSlot(children);
   const [isToggled, setIsToggled] = useState(false);
 
   return (
     <button onClick={() => setIsToggled(!isToggled)}>
+      {/* Pass the isToggled prop up to the parent*/}
       <slot.default isToggled={isToggled}>
+        {/* Dynamic fallback content */}
         {isToggled ? "Enabled" : "Disabled"}
       </slot.default>
     </button>
@@ -62,5 +91,5 @@ function ToggleButton({ children }) {
 
 <Callout>
   We'll see how to access the `isToggled` state from the parent in the
-  [templates](/tutorial/templates) section.
+  [templates](/tutorial/templates#accessing-childs-specified-props) section.
 </Callout>

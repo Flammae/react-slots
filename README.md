@@ -21,7 +21,7 @@ You can find the docs on the
 ## Discord
 
 If you need any assistance, feel free to join our
-[Discord server](https://discord.gg/HsjKhJJX)
+[Discord server](https://discord.gg/UHgArvjeNb)
 
 ## Implementing
 

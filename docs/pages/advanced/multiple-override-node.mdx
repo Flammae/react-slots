@@ -14,7 +14,7 @@ separately:
 ```jsx
 <slot.trigger>
   <OverrideNode allowedNodes={["button", String]} />
-  {/* Button was provided */}
+  {/* Override string nodes */}
   <OverrideNode
     allowedNodes={[String]}
     enforce="ignore" // Don't throw an error if not a string
@@ -22,7 +22,7 @@ separately:
       <button onClick={myClickHandler}>{node}</button>;
     }}
   />
-  {/* String was provided */}
+  {/* Override button elements */}
   <OverrideNode
     allowedNodes={["button"]}
     enforce="ignore" // Don't throw an error if not a button

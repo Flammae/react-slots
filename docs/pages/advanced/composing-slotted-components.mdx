@@ -112,11 +112,11 @@ function Parent({ children }) {
   const { slot } = useSlot(children);
 
   return (
-    <slot.default>
+    <template.default as={slot.default}>
       <OverrideNode props={{ id: (current) => `${current} parent-added` }}>
         <div props={{ id: "fallbacK-id" }}>Parent's fallback</div>
       </OverrideNode>
-    </slot.default>
+    </template.default>
   );
 }
 

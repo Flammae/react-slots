@@ -414,8 +414,9 @@ type-safe by default. Its type is inferred from the array you pass to
 `allowedNodes`. This means you can define complex override logic, and you'll get
 a type error if the element you are overriding changes its implementation. **The
 downside of `OverrideNode` itself is that it cannot enforce the type of allowed
-nodes on the type level; instead, a run-time error is thrown by default when the
-parent provides the wrong type of node.**
+nodes on the type level; instead, a development only run-time error is thrown by
+default when the parent provides the wrong type of node. In the production,
+disallowed nodes are removed**
 
 To make parents type-safe, all you have to do is use type-safe templates. You
 can create type-safe templates with either the `CreateTemplate` type or a

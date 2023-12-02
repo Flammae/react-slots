@@ -18,6 +18,11 @@
 You can find the docs on the
 [docs website](https://react-slots-docs.vercel.app/)
 
+## Discord
+
+If you need any assistance, feel free to join our
+[Discord server](https://discord.gg/UHgArvjeNb)
+
 ## Implementing
 
 ```tsx
@@ -75,12 +80,12 @@ import { template } from "beqa/react-slots";
     <img src=".." />
   </template.thumbnail>
   <template.title>A title</template.title>
-  <template.description>
+  <template.default>
     {({ isExpanded }) =>
       isExpanded ? <strong>A description</strong> : "A description"
     }
-  </template.description>
-  <template.description>doesn't have to be a function</template.description>
+  </template.default>
+  <template.default>doesn't have to be a function</template.default>
 </ListItem>;
 ```
 
@@ -101,12 +106,12 @@ const template = template as CreateTemplate<ListItemProps["children"]>;
     <img src="..." />
   </template.thumbnail>
   <template.title>A title</template.title>
-  <template.description>
+  <template.default>
     {({ isExpanded }) =>
       isExpanded ? <strong>A description</strong> : "A description"
     }
-  </template.description>
-  <template.description>doesn't have to be a function</template.description>
+  </template.default>
+  <template.default>doesn't have to be a function</template.default>
 </ListItem>;
 ```
 

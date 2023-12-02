@@ -138,12 +138,12 @@ to `slot-name` because:
     <ListItem>
       <template.thumbnail><img src=".." /></template.thumbnail>
       <template.title>A title</template.title>
-      <template.description>
+      <template.default>
         {({ isExpanded }) => isExpanded ? <strong>A description</strong> : "A description" }
-      </template.description>
-      <template.description>
+      </template.default>
+      <template.default>
         doesn't have to be a function
-      </template.description>
+      </template.default>
     </ListItem>
     ```
 
@@ -229,12 +229,12 @@ lost at this point.
 
 ### Composition with Slots
 
-`react-slots` addresses this issue with the `OverrideNode` element. While the
-name may sound intimidating, it's actually an easy and **type-safe** way to
-define strict relationships between composed elements. You start by including
-`<OverrideNode />` as a direct child of the slot element. You may use one or
-many `OverrideNode`'s per slot, and depending on whether you wrap the fallback
-with `OverrideNode`, the override will apply to the fallback as well.
+One way `react-slots` addresses this issue is with the `OverrideNode` element.
+While the name may sound intimidating, it's actually an easy and **type-safe**
+way to define strict relationships between composed elements. You start by
+including `<OverrideNode />` as a direct child of the slot element. You may use
+one or many `OverrideNode`'s per slot, and depending on whether you wrap the
+fallback with `OverrideNode`, the override will apply to the fallback as well.
 
 ```jsx
 import { OverrideNode, useSlot } from "@beqa/react-slots";
@@ -280,8 +280,24 @@ function SingleExpandList({ children, expandedId, onExpand }) {
 }
 ```
 
-Since we are overriding default slot content, `OverrideNode` will apply to every
-top-level child of `SingleExpandList`.
+Since we are overriding `default` slot content, `OverrideNode` will apply to
+every top-level child of `SingleExpandList`.
+
+`SingleExpandList` in the above example accomplishes these:
+
+- It wraps any free-form content.
+- Everywhere in the children where it sees the `ListItem` component, it
+  overrides the onExpand prop without stealing the original handler.
+- It overrides the `isExpanded` prop, so if any `ListItem` has that prop
+  specified, it will be ignored, and the only source of truth will come from
+  `SingleExpandList`.
+- It ignores every other node, so the parent can specify custom components for
+  dividers, headings and so on.
+
+`OverrideNode` is just one way to accomplish this. Depending on the situation,
+you may or may not need it. In the advanced examples below, `Dialog` and
+`DialogTrigger` use React Context instead of `OverrideNode` to expose a similar
+API.
 
 #### Usage
 
@@ -421,12 +437,12 @@ const template = template as CreateTemplate<ListItemProps["children"]>;
     <img src="..." />
   </template.thumbnail>
   <template.title>A title</template.title>
-  <template.description>
+  <template.default>
     {({ isExpanded }) =>
       isExpanded ? <strong>A description</strong> : "A description"
     }
-  </template.description>
-  <template.description>doesn't have to be a function</template.description>
+  </template.default>
+  <template.default>doesn't have to be a function</template.default>
 </ListItem>;
 ```
 

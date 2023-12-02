@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 1.1.1
+
+### Patch Changes
+
+- Fixed typo in the README
+
 ## 1.1.0
 
 ### Minor Changes

@@ -35,22 +35,51 @@ const config: DocsThemeConfig = {
   docsRepositoryBase: "https://github.com/Flammae/react-slots/tree/main/docs",
   head: () => {
     return (
-      <link
-        rel="icon"
-        type="image/x-icon"
-        href="logo-sm-black-white.png"
-      ></link>
+      <>
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
+      </>
     );
   },
 
   useNextSeoProps() {
     const { asPath } = useRouter();
     console.log("asPath", asPath);
-    if (asPath !== "/") {
-      return {
-        titleTemplate: "%s – @beqa/react-slots",
-      };
-    }
+
+    let titleTemplate =
+      asPath === "/"
+        ? "%s"
+        : asPath.startsWith("/tutorial")
+        ? "%s – Tutorial – beqa/react-slots"
+        : asPath.startsWith("/advanced")
+        ? "%s – Advanced Use – beqa/react-slots"
+        : "%s – beqa/react-slots";
+
+    return {
+      defaultTitle: "beqa/react-slots",
+      titleTemplate,
+      description:
+        asPath === "/"
+          ? "beqa/react-slots is the most feature-complete slot implementation in React. It enables you to break down parent-provided content into multiple parts and instruct a component on where to render each part by placing slots."
+          : undefined,
+      canonical: "https://slots.beqa.site",
+    };
   },
 };
 

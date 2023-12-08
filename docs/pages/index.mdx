@@ -13,6 +13,10 @@ patterns in React.
 
 ## What is `react-slots` for
 
+**The slot pattern enables you to break down parent-provided content into
+multiple parts and instruct a component on where to render each part by placing
+slots.**
+
 The slot pattern works best for utility components within your design system.
 These components don't depend on any specific shape of data and work with
 primitives as much as possible. You can think of `react-slots` as a way to
@@ -691,3 +695,38 @@ Checkout
   If you like this project please show support by starring it on
   [Github](https://github.com/Flammae/react-slots)
 </Callout>
+
+```tsx
+type Props = {
+  // a function that renders content or just content;
+  summary: SlotProp;
+  // a function that receives isOpen and returns content or just content;
+  icon: SlotProp<{ isOpen: boolean }>;
+  // ... same as before
+  children: SlotChildren<Slot<{ isOpen: boolean }>>;
+};
+
+function Accordion(props: Props) {
+  const { slot } = useSlot({
+    summary: props.summary,
+    icon: props.icon,
+    children: props.children,
+  });
+
+  return (
+    <div>
+      <h1>
+        <slot.summary />
+        <slot.icon isOpen={true} />
+      </h1>
+      <h1>
+        <slot.default isOpen={true} />
+      </h1>
+    </div>
+  );
+}
+
+<Accordion summary="summary" icon={"<"}>
+  content
+</Accordion>;
+```

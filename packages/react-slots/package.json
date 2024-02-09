@@ -44,8 +44,5 @@
     "react-dom": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "ts-toolbelt": "^9.6.0"
   }
 }

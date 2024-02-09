@@ -1,7 +1,6 @@
 import * as React from "react";
-import { type Any } from "ts-toolbelt";
-import { Function } from "ts-toolbelt";
 import { forEachNode, forEachNodeReplace } from "./forEachNode";
+import { NoInfer, Pretty } from "./typeUtils";
 
 type AllowedNodes = React.ElementType | StringConstructor | NumberConstructor;
 
@@ -27,7 +26,7 @@ type OverrideNodeProps<
   T extends AllowedNodes,
   U extends "throw" | "ignore" | "remove" = "throw",
   TNode = GetNode<T>,
-  TProps = Any.Compute<GetProps<T>, "flat">,
+  TProps = Pretty<GetProps<T>>,
 > = {
   /**
    * An array specifying allowed React intrinsic element names or custom component names.
@@ -92,14 +91,14 @@ export type OverrideNode = {
     | (null extends T ? null : never);
   /** Intercepts a call to a prop and executes the x function before the original function. */
   chainBefore: <T extends (...args: any[]) => any>(
-    x: Function.NoInfer<T>,
+    x: NoInfer<T>,
   ) => (prop: T, propName: keyof any, slotName: string) => T;
   /** Intercepts a call to a prop and executes the x function after the original function. */
   chainAfter: <T extends (...args: any[]) => any>(
-    x: Function.NoInfer<T>,
+    x: NoInfer<T>,
   ) => (prop: T, propName: keyof any, slotName: string) => T;
   /** Overrides prop */
-  override: <T>(x: Function.NoInfer<T>) => (prop: T) => T;
+  override: <T>(x: NoInfer<T>) => (prop: T) => T;
 };
 
 export const OverrideNode = (() => {
@@ -373,7 +372,7 @@ export function applyOverride(
       if (typeof currentConfig.props === "function") {
         newChild = React.cloneElement(
           newChild,
-          currentConfig.props(newChild.props),
+          currentConfig.props(newChild.props as any),
         );
       } else if (
         typeof currentConfig.props === "object" &&

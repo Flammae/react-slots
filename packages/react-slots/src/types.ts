@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Any } from "ts-toolbelt";
 import {
   COMPONENT_TYPE,
   DEFAULT_TEMPLATE_AS,
@@ -8,18 +7,13 @@ import {
   SLOT_TYPE_IDENTIFIER,
   type DefaultSlotName,
 } from "./constants";
+import { Pretty, UnionToIntersection } from "./typeUtils";
 
 // Note on {} vs object in type args.
 // We like to write `extends object` whenever a type is exported because it's
 // bit more stricter to what can actually be assigned to it.
 // For utility types that don't get exported but are used by other types,
 // we prefer {} because it looks cleaner on hover
-
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I,
-) => void
-  ? I
-  : never;
 
 type ElementType =
   | Exclude<React.ComponentType<any>, SlotComponent<any>>
@@ -220,11 +214,10 @@ type GetTemplateUnions<U> = U extends TemplateAsSlotComponentLikeElement<
 /**
  * Create type-safe template
  */
-export type CreateTemplate<T extends SlotChildren> = {} & Any.Compute<
+export type CreateTemplate<T extends SlotChildren> = Pretty<
   UnionToIntersection<
     GetTemplateUnions<Exclude<0 extends T & 1 ? SlotChildren : T, undefined>>
-  >,
-  "flat"
+  >
 >;
 
 // ------------------ //
@@ -266,18 +259,17 @@ type GetSlotComponentUnions<T> = T extends TemplateAsSlotComponentLikeElement<
   ? { [Name in N]: SlotComponent<P> }
   : never;
 
-type CreateSlotComponent<T extends SlotChildren> = {} & Any.Compute<
+type CreateSlotComponent<T extends SlotChildren> = {} & Pretty<
   UnionToIntersection<
     GetSlotComponentUnions<0 extends T & 1 ? SlotChildren : T>
-  >,
-  "flat"
+  >
 >;
 
 export type CreateSlot<T extends SlotChildren> = CreateSlotComponent<T>;
 
 // -------------------- //
 
-export type HasSlot<T extends SlotChildren> = Any.Compute<{
+export type HasSlot<T extends SlotChildren> = Pretty<{
   [Name in Extract<
     T,
     React.ReactElement<{ "slot-name": string }>

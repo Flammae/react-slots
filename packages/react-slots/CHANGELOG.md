@@ -1,5 +1,11 @@
 # @beqa/react-slots
 
+## 1.1.2
+
+### Patch Changes
+
+- Removed ts-toolbelt dependency
+
 ## 1.1.1
 
 ### Patch Changes

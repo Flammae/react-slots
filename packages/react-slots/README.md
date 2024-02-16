@@ -4,6 +4,8 @@
 
 ## Featuring
 
+- [Lightweight](https://bundlephobia.com/package/@beqa/react-slots) (< 8KB
+  minified, < 3KB minified & gzipped)
 - Composability with ease
 - Type-safety
 - Server Components support
@@ -12,6 +14,15 @@
 - Self-documenting with typescript
 - Elegant solution to a11y attributes
 - Inversion of control
+
+## Installation
+
+The installation process consists of two parts: installing the **core library**
+(around **3KB gzipped** piece of code that runs in your users' browsers and
+handles the core logic) and an optional **compile-time plugin** (for transpiling
+JSX syntax for your slot elements into regular function invocations).
+
+[Installation steps](https://slots.beqa.site/installation)
 
 ## Docs
 
